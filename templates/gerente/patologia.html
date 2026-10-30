@@ -1,5 +1,0 @@
-{% extends "base.html" %}{% block c %}
-<h1>Definir / modificar patología</h1><div class="card"><label>Patología<input value="Fabry"></label>
-<label>Síntoma cardinal<input list="s" value="Acroparestesias"></label><label>Síntomas secundarios<input list="s" placeholder="Agregar…"></label>
-<datalist id="s"><option>Angioqueratomas</option><option>Hipohidrosis</option><option>Proteinuria</option></datalist>
-{{ act('Guardar patología', 'Patología registrada') }}</div>{% endblock %}

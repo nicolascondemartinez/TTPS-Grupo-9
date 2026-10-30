@@ -1,7 +1,0 @@
-{% extends "base.html" %}{% block c %}
-<h1>Resultados</h1><div class="card"><table><tr><th>Estudio</th><th>Estado</th><th></th></tr>
-{% for e in estudios[:1] + estudios[4:] %}<tr><td>#{{ e.id }} {{ e.patologia }}</td><td>{{ badge(e.estado) }}</td>
-<td>{% if e.estado == 'Finalizado' %}{{ act('Descargar informe', 'Informe descargado') }}{% else %}<span class="muted">Disponible al finalizar</span>{% endif %}</td></tr>{% endfor %}</table></div>
-<h2>Chatbot de dudas</h2><div class="card chat"><p class="bot">Hola, consultame sobre Fabry, Pompe, Mucopolisacaridosis 1, Gaucher o ASMD.</p>
-<p class="me">¿Qué es la enfermedad de Fabry?</p><p class="bot">Es una enfermedad lisosomal hereditaria causada por variantes en el gen GLA… (respuesta simulada)</p>
-<input placeholder="Escribí tu pregunta"> {{ act('Enviar', 'Pregunta enviada (simulado)') }}</div>{% endblock %}

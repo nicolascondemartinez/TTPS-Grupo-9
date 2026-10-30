@@ -1,7 +1,0 @@
-{% extends "base.html" %}{% block c %}
-<h1>Sacar turno de extracción</h1>
-{{ mapa([('Centro Norte', 30, 25), ('Centro Sur', 55, 70), ('Centro Oeste', 15, 60)]) }}
-<div class="card"><h3>Turnos libres (15 min, lunes a viernes de 9 a 18)</h3>
-{% for h in ['09:00','09:15','09:30','10:00','10:15'] %}{{ act(h, 'Turno reservado a las ' ~ h ~ '. Estado: Turno sacado', 'sec') }} {% endfor %}</div>
-<div class="card"><h3>Mi turno</h3><p>Lunes 09:15 · Centro Norte</p>
-{{ act('Descargar orden de extracción', 'Descarga simulada') }} {{ act('Descargar consentimiento informado', 'Descarga simulada') }} {{ act('Cancelar turno', 'Turno cancelado. Estado: Pagado', 'danger') }}</div>{% endblock %}

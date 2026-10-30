@@ -1,6 +1,0 @@
-{% extends "base.html" %}{% block c %}
-<h1>Mis estudios</h1>
-<div class="card"><table><tr><th>N°</th><th>Patología</th><th>Estado</th></tr>
-{% for e in estudios[:1] + estudios[4:] %}<tr><td>#{{ e.id }}</td><td>{{ e.patologia }}</td><td>{{ badge(e.estado) }}</td></tr>{% endfor %}</table></div>
-<h2>Avisos</h2><div class="card"><ul>{% for a in avisos %}<li>{{ a }}</li>{% endfor %}</ul></div>
-<p class="muted">Primer ingreso: cambio de contraseña obligatorio (simulado)</p>{% endblock %}

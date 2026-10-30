@@ -1,3 +1,0 @@
-{% extends "base.html" %}{% block c %}
-<h1>Patologías</h1><div class="card"><table><tr><th>Patología</th><th>Gen</th><th>Síntoma cardinal</th><th></th></tr>
-{% for p in patologias %}<tr><td>{{ p }}</td><td>{{ genes[p] }}</td><td>Síntoma de ejemplo</td><td><a class="btn sec" href="{{ url_for('gerente.patologia') }}">Modificar</a></td></tr>{% endfor %}</table></div>{% endblock %}

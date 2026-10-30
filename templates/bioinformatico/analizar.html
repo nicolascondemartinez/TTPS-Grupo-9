@@ -1,7 +1,0 @@
-{% extends "base.html" %}{% block c %}
-<h1>Cargar variantes · Estudio #102 (Pompe)</h1><div class="card"><label>Gen solicitado<select><option>GAA</option><option>GLA</option></select></label>
-<table><tr><th></th><th>Variante</th><th>Clasificación</th></tr>
-<tr><td><input type="radio" name="v"></td><td>c.-32-13T&gt;G</td><td><span class="badge warn">Patogénica</span></td></tr>
-<tr><td><input type="radio" name="v"></td><td>c.1935C&gt;A</td><td><span class="badge">VUS</span></td></tr>
-<tr><td><input type="radio" name="v"></td><td>c.547-39T&gt;G</td><td><span class="badge ok">Benigna</span></td></tr></table>
-{{ act('Confirmar análisis', 'Informe PDF generado. Estado: Finalizado. Paciente y médico notificados') }}</div>{% endblock %}

@@ -1,3 +1,0 @@
-{% macro act(label, msg, cls='') %}<a class="btn {{ cls }}" href="{{ url_for('ok', m=msg, back=request.path) }}">{{ label }}</a>{% endmacro %}
-{% macro badge(e) %}<span class="badge {{ 'ok' if e in ['Pagado','Finalizado'] else 'warn' if e == 'Creado' else '' }}">{{ e }}</span>{% endmacro %}
-{% macro mapa(pines) %}<div class="mapa">{% for n,x,y in pines %}<span class="pin" style="left:{{x}}%;top:{{y}}%" title="{{n}}">📍<small>{{n}}</small></span>{% endfor %}</div>{% endmacro %}

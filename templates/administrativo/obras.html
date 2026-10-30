@@ -1,5 +1,0 @@
-{% extends "base.html" %}{% block c %}
-<h1>Estudios a la espera de autorización</h1><div class="card"><table><tr><th>N°</th><th>Paciente</th><th>Obra social</th><th>Cobertura</th><th>Registrar respuesta (por teléfono)</th></tr>
-<tr><td>#101</td><td>{{ pacientes[0] }}</td><td>OSDE</td><td>80%</td><td>{{ act('Autorizado parcial', 'Autorización registrada. Paciente debe abonar la diferencia') }}</td></tr>
-<tr><td>#103</td><td>{{ pacientes[2] }}</td><td>PAMI</td><td>100%</td><td>{{ act('Autorizado total', 'Autorización registrada. Estado: Pagado') }}</td></tr>
-<tr><td>#104</td><td>{{ pacientes[3] }}</td><td>IOMA</td><td>60%</td><td>{{ act('Rechazado', 'Rechazo registrado. Paciente notificado', 'danger') }}</td></tr></table></div>{% endblock %}

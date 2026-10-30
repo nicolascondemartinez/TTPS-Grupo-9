@@ -17,3 +17,10 @@ instance/
 .idea/
 .DS_Store
 Thumbs.db
+# Tests
+.pytest_cache/
+
+# Frontend
+node_modules/
+dist/
+.env.local

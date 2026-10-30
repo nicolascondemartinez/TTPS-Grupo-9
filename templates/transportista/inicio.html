@@ -1,5 +1,0 @@
-{% extends "base.html" %}{% block c %}
-<h1>Mi orden del día</h1>{{ mapa([('Centro Norte', 25, 30), ('Centro Sur', 55, 65), ('Centro Oeste', 15, 70), ('Lab. central', 80, 25)]) }}
-<div class="card"><table><tr><th>#</th><th>Centro</th><th>Dirección</th><th>Muestras</th><th></th></tr>
-{% for n, d, m in centros %}<tr><td>{{ loop.index }}</td><td>{{ n }}</td><td>{{ d }}</td><td>{{ m }}</td><td>{{ act('Marcar como recogido', 'Muestras de ' ~ n ~ ' en camino al laboratorio central') }}</td></tr>{% endfor %}</table>
-{{ act('Indicar llegada al laboratorio central', 'Muestras entregadas. Estado: Esperando armado de lote', 'sec') }}</div>{% endblock %}

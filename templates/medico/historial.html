@@ -1,6 +1,0 @@
-{% extends "base.html" %}{% block c %}
-<h1>Historial de estudios</h1><div class="card"><label>Paciente<select>{% for p in pacientes %}<option>{{ p }}</option>{% endfor %}</select></label>
-<table><tr><th>N°</th><th>Paciente</th><th>Patología</th><th>Estado</th><th></th></tr>
-{% for e in estudios %}<tr><td>#{{ e.id }}</td><td>{{ e.paciente }}</td><td>{{ e.patologia }}</td><td>{{ badge(e.estado) }}</td>
-<td>{% if e.estado == 'Finalizado' %}{{ act('Informe', 'Informe descargado', 'sec') }} {{ act('Re-analizar', 'Re-análisis solicitado. Estado: En análisis por bioinformática') }}{% endif %}</td></tr>{% endfor %}</table></div>
-<p class="muted">Estados posibles: {{ estados | join(' → ') }}</p>{% endblock %}

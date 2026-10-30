@@ -1,5 +1,0 @@
-{% extends "base.html" %}{% block c %}
-<h1>Cupones de descuento</h1><div class="card"><h3>Generar cupón</h3><label>Porcentaje de descuento<input value="20"></label>
-{{ act('Generar cupón (PDF con QR)', 'Cupón generado') }}</div>
-<div class="card"><h3>Asignar a un médico</h3><label>Médico tratante<select><option>Dra. Pérez</option><option>Dr. Suárez</option></select></label><label>Cantidad<input value="5"></label>
-{{ act('Asignar cupones', 'Cupones asignados al médico') }}</div>{% endblock %}

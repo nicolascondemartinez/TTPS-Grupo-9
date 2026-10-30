@@ -1,4 +1,0 @@
-{% extends "base.html" %}{% block c %}
-<h1>Cupones de descuento</h1><div class="card"><p>Disponibles: <b>5</b></p>
-<label>Paciente<select>{% for p in pacientes %}<option>{{ p }}</option>{% endfor %}</select></label>
-{{ act('Asignar cupón al paciente', 'Cupón asignado. Quedan 4 disponibles') }}</div>{% endblock %}

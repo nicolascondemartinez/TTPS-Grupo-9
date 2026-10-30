@@ -1,7 +1,0 @@
-{% extends "base.html" %}{% block c %}
-<h1>Recepción de muestras</h1><div class="card"><h3>Registrar volumen del tubo</h3>
-<label>Estudio<select><option>#103 Gaucher</option></select></label><label>Mililitros<input value="1.5"></label>
-{{ act('Registrar volumen', 'Volumen menor a 2 ml: remuestreo gratuito notificado') }}</div>
-<h1>Resultados de Corea</h1><div class="card"><label>Estudio<select><option>#102 Pompe (urgente)</option><option>#104 ASMD</option></select></label>
-<label>Datos crudos<input type="file"></label>{{ act('Cargar resultado', 'Estado: En análisis por bioinformática. Bioinformáticos notificados') }}
-</div>{% endblock %}

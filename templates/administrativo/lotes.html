@@ -1,5 +1,0 @@
-{% extends "base.html" %}{% block c %}
-<h1>Lotes</h1><div class="card"><table><tr><th>Lote</th><th>Muestras</th><th>Estado</th><th>Retiro FedEx (lun–vie 9 a 18)</th></tr>
-{% for l in lotes %}<tr><td>{{ l.id }} {% if l.urgente %}<span class="badge warn">Urgente (Pompe)</span>{% endif %}</td><td>{{ l.muestras }}/10</td><td>{{ badge(l.estado) }}</td>
-<td><input type="datetime-local"> {{ act('Programar retiro', 'Retiro programado con FedEx') }}</td></tr>{% endfor %}</table></div>
-<div class="card"><p>Muestras esperando armado de lote: 10</p>{{ act('Armar lote (10 muestras)', 'Lote armado, CSV enviado al Ministerio y PDF de autorización asociado') }}</div>{% endblock %}

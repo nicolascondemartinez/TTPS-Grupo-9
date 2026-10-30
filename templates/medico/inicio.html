@@ -1,6 +1,0 @@
-{% extends "base.html" %}{% block c %}
-<h1>Panel del médico tratante</h1><div class="grid">
-<a class="card role" href="{{ url_for('medico.alta_paciente') }}"><h3>➕ Dar de alta paciente</h3></a>
-<a class="card role" href="{{ url_for('medico.alta_estudio') }}"><h3>🧪 Dar de alta estudio</h3></a>
-<a class="card role" href="{{ url_for('medico.historial') }}"><h3>📋 Historial de estudios</h3></a>
-<a class="card role" href="{{ url_for('medico.cupones') }}"><h3>🎟️ Mis cupones (5)</h3></a></div>{% endblock %}

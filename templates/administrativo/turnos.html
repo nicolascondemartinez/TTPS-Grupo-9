@@ -1,4 +1,0 @@
-{% extends "base.html" %}{% block c %}
-<h1>Avisos de inasistencia (Telegram)</h1><div class="card"><table><tr><th>Paciente</th><th>Turno</th><th>Inasistencias</th><th></th></tr>
-<tr><td>{{ pacientes[2] }}</td><td>Lun 09:15 · Centro Norte</td><td>1</td><td>{{ act('Registrar inasistencia', 'Inasistencia registrada. Estado: Pagado') }}</td></tr>
-<tr><td>{{ pacientes[3] }}</td><td>Mar 10:00 · Centro Sur</td><td>4</td><td>{{ act('Registrar inasistencia', 'Quinta inasistencia: se perdió el pago. Estado: Creado', 'danger') }}</td></tr></table></div>{% endblock %}

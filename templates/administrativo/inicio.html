@@ -1,4 +1,0 @@
-{% extends "base.html" %}{% block c %}
-<h1>Estudios en estado Creado</h1><div class="card"><table><tr><th>N°</th><th>Paciente</th><th>Patología</th><th>Genes</th><th>Cálculo</th><th></th></tr>
-{% for e in estudios if e.estado == 'Creado' %}<tr><td>#{{ e.id }}</td><td>{{ e.paciente }}</td><td>{{ e.patologia }}</td><td>{{ e.genes }}</td>
-<td>USD 500 + {{ [e.genes - 5, 0] | max }} × 30 = <b>USD {{ e.precio }}</b></td><td>{{ act('Emitir presupuesto', 'Presupuesto emitido y paciente notificado') }}</td></tr>{% endfor %}</table></div>{% endblock %}

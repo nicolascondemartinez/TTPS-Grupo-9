@@ -1,5 +1,0 @@
-{% extends "base.html" %}{% block c %}
-<h1>Ubicación de muestras</h1><label>Buscar estudio<input value="#101"></label>
-{{ mapa([('Transportista (Buenos Aires)', 40, 45), ('Laboratorio central', 75, 20)]) }}
-<h1>Alta de transportista</h1><div class="card"><div class="cols"><label>Nombre<input></label><label>Mail<input></label><label>Teléfono<input></label><label>Provincia que cubre<input></label></div>
-{{ act('Registrar transportista', 'Transportista registrado. Credenciales enviadas por mail') }}</div>{% endblock %}

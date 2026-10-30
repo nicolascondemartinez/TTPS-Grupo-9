@@ -1,5 +1,0 @@
-{% extends "base.html" %}{% block c %}
-<h1>Estudios pendientes de análisis</h1><div class="card"><table><tr><th>N°</th><th>Patología</th><th>Prioridad</th><th></th></tr>
-{% for e in (estudios | selectattr('estado', 'equalto', 'En análisis por bioinformática') | sort(attribute='urgente', reverse=True)) %}
-<tr><td>#{{ e.id }}</td><td>{{ e.patologia }}</td><td>{% if e.urgente %}<span class="badge warn">Pompe urgente (&lt; 4 meses)</span>{% else %}Normal{% endif %}</td>
-<td><a class="btn" href="{{ url_for('bioinformatico.analizar') }}">Tomar estudio</a></td></tr>{% endfor %}</table></div>{% endblock %}

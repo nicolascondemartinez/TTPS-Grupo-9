@@ -1,8 +1,0 @@
-{% extends "base.html" %}{% block c %}
-<h1>Dar de alta estudio</h1><div class="card">
-<label>Paciente<select>{% for p in pacientes %}<option>{{ p }}</option>{% endfor %}</select></label>
-<h3>Patologías sospechadas</h3>{% for p in patologias %}<label class="inl"><input type="checkbox"> {{ p }} <small>({{ genes[p] }})</small></label>{% endfor %}
-<label>Genes adicionales (manual)<input placeholder="Ej: NPC1, CFTR"></label>
-<label class="inl"><input type="checkbox"> Evaluar hallazgos secundarios</label>
-<p>Precio estimado: USD 500 hasta 5 genes + USD 30 por gen adicional.</p>
-{{ act('Dar de alta estudio', 'Estudio creado. Estado: Creado') }}</div>{% endblock %}

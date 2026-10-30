@@ -1,4 +1,0 @@
-{% extends "base.html" %}{% block c %}
-<h1>Ingresar como…</h1><p class="muted">Login simulado: elegí un rol para recorrer el sistema.</p>
-<div class="grid">{% for k, n in roles.items() %}<a class="card role" href="{{ url_for('entrar', rol=k) }}"><h3>{{ n }}</h3></a>{% endfor %}</div>
-<p><a href="{{ url_for('registro') }}">Registrar un usuario nuevo</a></p>{% endblock %}
