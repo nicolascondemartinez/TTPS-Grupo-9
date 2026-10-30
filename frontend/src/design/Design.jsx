@@ -10,6 +10,10 @@ import EstadoChip from '../components/EstadoChip.jsx'
 import Icono from '../components/Icono.jsx'
 import LineaDeTiempo from '../components/LineaDeTiempo.jsx'
 import Logo from '../components/Logo.jsx'
+import ModalConfirmacion from '../components/ModalConfirmacion.jsx'
+import Monto from '../components/Monto.jsx'
+import { useNotificar } from '../components/Notificaciones.jsx'
+import SubirArchivo from '../components/SubirArchivo.jsx'
 import Tabla from '../components/Tabla.jsx'
 import Tarjeta from '../components/Tarjeta.jsx'
 import { ESTADOS_ESTUDIO } from '../constants/estados.js'
@@ -43,6 +47,8 @@ function Seccion({ etiqueta, titulo, codigo, children }) {
 export default function Design() {
   const [api_estado, setApiEstado] = useState('consultando…')
   const [seleccionada, setSeleccionada] = useState(1)
+  const [modalAbierto, setModalAbierto] = useState(false)
+  const notificar = useNotificar()
 
   useEffect(() => {
     api.get('/health').then((d) => setApiEstado(d.status)).catch(() => setApiEstado('sin conexión'))
@@ -134,6 +140,27 @@ export default function Design() {
 
       <Seccion etiqueta="08" titulo="Layouts" codigo={`// Pantallas internas: agregar la ruta dentro de <AppLayout> en App.jsx\n// Pantallas de acceso: <IngresoLayout> {formulario} </IngresoLayout>`}>
         <p>La app interna usa <code>AppLayout</code> (barra lateral con el menú del rol, definido en <code>constants/roles.js</code>). Las pantallas de acceso usan <code>IngresoLayout</code>.</p>
+      </Seccion>
+      
+      <Seccion etiqueta="09" titulo="Montos, archivos, confirmaciones y avisos" codigo={`<Monto valor={estudio.monto} />          // "590.00" se ve como "USD 590"\nformatearUSD(552.5)                        // "USD 552,50", para usar dentro de un texto\n\n<SubirArchivo etiqueta="Resolución judicial" onChange={(archivo) => setArchivo(archivo)} />\n\n<ModalConfirmacion abierto={abierto} titulo="¿Cancelar el turno?" peligro\n  textoConfirmar="Cancelar turno" onConfirmar={cancelar} onCancelar={() => setAbierto(false)}>\n  El turno queda libre para otra persona.\n</ModalConfirmacion>\n\nconst notificar = useNotificar()\nnotificar('Pago registrado')               // tipos: exito (por defecto) | error | info`}>
+        <div className="design__fila">
+          <Monto valor="500.00" /><Monto valor={590} /><Monto valor={1250} /><Monto valor="552.5" />
+        </div>
+        <div className="design__grilla">
+          <SubirArchivo etiqueta="Resolución judicial" onChange={(a) => a && notificar(`Archivo elegido: ${a.name}`, 'info')} />
+        </div>
+        <div className="design__fila">
+          <Boton variante="secundario" onClick={() => setModalAbierto(true)}>Abrir confirmación</Boton>
+          <Boton variante="secundario" onClick={() => notificar('Pago registrado')}>Aviso de éxito</Boton>
+          <Boton variante="secundario" onClick={() => notificar('No se pudo guardar el pago', 'error')}>Aviso de error</Boton>
+        </div>
+        <ModalConfirmacion
+          abierto={modalAbierto} titulo="¿Cancelar el turno?" peligro textoConfirmar="Cancelar turno"
+          onConfirmar={() => { setModalAbierto(false); notificar('Turno cancelado') }}
+          onCancelar={() => setModalAbierto(false)}
+        >
+          El turno del lunes 10 de noviembre a las 9:15 queda libre. Vas a poder sacar otro.
+        </ModalConfirmacion>
       </Seccion>
     </div>
   )
