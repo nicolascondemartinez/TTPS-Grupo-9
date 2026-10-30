@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="400" viewBox="0 0 120 400" fill="none">
+  <defs>
+    <linearGradient id="a" x1="0" y1="0" x2="0" y2="400" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FF8A3D"/>
+      <stop offset="1" stop-color="#8B5CF6"/>
+    </linearGradient>
+    <linearGradient id="b" x1="0" y1="400" x2="0" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FF8A3D"/>
+      <stop offset="1" stop-color="#8B5CF6"/>
+    </linearGradient>
+    <linearGradient id="r" x1="20" y1="0" x2="100" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FF8A3D"/>
+      <stop offset="1" stop-color="#8B5CF6"/>
+    </linearGradient>
+  </defs>
+  <!-- peldaños -->
+  <path d="M31.7 25H88.3M20 50H100M31.7 75H88.3M31.7 125H88.3M20 150H100M31.7 175H88.3M31.7 225H88.3M20 250H100M31.7 275H88.3M31.7 325H88.3M20 350H100M31.7 375H88.3" stroke="url(#r)" stroke-width="3" stroke-linecap="round" opacity="0.75"/>
+  <!-- hebras -->
+  <path d="M60 0C113 33 113 67 60 100C7 133 7 167 60 200C113 233 113 267 60 300C7 333 7 367 60 400" stroke="url(#a)" stroke-width="6" stroke-linecap="round"/>
+  <path d="M60 0C7 33 7 67 60 100C113 133 113 167 60 200C7 233 7 267 60 300C113 333 113 367 60 400" stroke="url(#b)" stroke-width="6" stroke-linecap="round"/>
+</svg>

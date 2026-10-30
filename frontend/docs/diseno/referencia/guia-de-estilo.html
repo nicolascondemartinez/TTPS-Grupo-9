@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Guía de estilo</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+input::placeholder{color:#6B6384}
+</style>
+</helmet>
+<div style="width: 1280px; height: 2200px; box-sizing: border-box; padding: 64px; background: #F8F6FC; color: #160F2E; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column; gap: 64px">
+
+  <!-- Encabezado -->
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 24px">
+    <div style="display: flex; align-items: center; gap: 14px">
+      <div style="width: 48px; height: 48px; border-radius: 14px; background: linear-gradient(135deg, #6D28D9 0%, #C2410C 100%); display: flex; align-items: center; justify-content: center">
+        <svg width="20" height="34" viewBox="0 0 120 200" fill="none" aria-hidden="true">
+          <path d="M31.7 25H88.3M20 50H100M31.7 75H88.3M31.7 125H88.3M20 150H100M31.7 175H88.3" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" opacity="0.8"></path>
+          <path d="M60 0C113 33 113 67 60 100C7 133 7 167 60 200" stroke="#FFFFFF" stroke-width="15" stroke-linecap="round"></path>
+          <path d="M60 0C7 33 7 67 60 100C113 133 113 167 60 200" stroke="#FFFFFF" stroke-width="15" stroke-linecap="round"></path>
+        </svg>
+      </div>
+      <div style="font-family: 'Space Grotesk', system-ui, sans-serif; font-weight: 600; font-size: 24px; letter-spacing: -0.01em">Exoma Clínico</div>
+    </div>
+    <div style="font-size: 14px; color: #5B5373">Dirección visual · propuesta 1</div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 16px; max-width: 820px">
+    <h1 style="margin: 0; font-family: 'Space Grotesk', system-ui, sans-serif; font-weight: 600; font-size: 64px; line-height: 68px; letter-spacing: -0.02em">Naranja y violeta, en degradé, sobre una base sobria.</h1>
+    <p style="margin: 0; font-size: 18px; line-height: 28px; color: #5B5373">Un tono futurista que se nota en el color y en la molécula de ADN, pero con superficies claras y tipografía legible para que la herramienta siga siendo cómoda de usar todos los días.</p>
+  </div>
+
+  <!-- 01 Color -->
+  <div style="display: flex; flex-direction: column; gap: 24px">
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <div style="font-family: 'Space Grotesk', system-ui, sans-serif; font-weight: 600; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; color: #C2410C">01 · Color</div>
+      <h2 style="margin: 0; font-family: 'Space Grotesk', system-ui, sans-serif; font-weight: 600; font-size: 32px; line-height: 38px">Paleta</h2>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 16px">
+      <div style="background: #FFFFFF; border: 1px solid #E4DEF2; border-radius: 16px; overflow: hidden">
+        <div style="height: 96px; background: #6D28D9"></div>
+        <div style="padding: 12px 14px 16px; display: flex; flex-direction: column; gap: 2px">
+          <div style="font-weight: 600; font-size: 15px">Violeta 600</div>
+          <div style="font-size: 13px; color: #5B5373">#6D28D9</div>
+          <div style="font-size: 13px; line-height: 18px; color: #5B5373; margin-top: 6px">Acciones, enlaces, énfasis</div>
+        </div>
+      </div>
+      <div style="background: #FFFFFF; border: 1px solid #E4DEF2; border-radius: 16px; overflow: hidden">
+        <div style="height: 96px; background: #8B5CF6"></div>
+        <div style="padding: 12px 14px 16px; display: flex; flex-direction: column; gap: 2px">
+          <div style="font-weight: 600; font-size: 15px">Violeta 400</div>
+          <div style="font-size: 13px; color: #5B5373">#8B5CF6</div>
+          <div style="font-size: 13px; line-height: 18px; color: #5B5373; margin-top: 6px">Decoración y gráficos. No para texto.</div>
+        </div>
+      </div>
+      <div style="background: #FFFFFF; border: 1px solid #E4DEF2; border-radius: 16px; overflow: hidden">
+        <div style="height: 96px; background: #C2410C"></div>
+        <div style="padding: 12px 14px 16px; display: flex; flex-direction: column; gap: 2px">
+          <div style="font-weight: 600; font-size: 15px">Naranja 600</div>
+          <div style="font-size: 13px; color: #5B5373">#C2410C</div>
+          <div style="font-size: 13px; line-height: 18px; color: #5B5373; margin-top: 6px">Acciones secundarias, atención</div>
+        </div>
+      </div>
+      <div style="background: #FFFFFF; border: 1px solid #E4DEF2; border-radius: 16px; overflow: hidden">
+        <div style="height: 96px; background: #FF8A3D"></div>
+        <div style="padding: 12px 14px 16px; display: flex; flex-direction: column; gap: 2px">
+          <div style="font-weight: 600; font-size: 15px">Naranja 400</div>
+          <div style="font-size: 13px; color: #5B5373">#FF8A3D</div>
+          <div style="font-size: 13px; line-height: 18px; color: #5B5373; margin-top: 6px">ADN, brillos y gráficos</div>
+        </div>
+      </div>
+      <div style="background: #FFFFFF; border: 1px solid #E4DEF2; border-radius: 16px; overflow: hidden">
+        <div style="height: 96px; background: #160F2E"></div>
+        <div style="padding: 12px 14px 16px; display: flex; flex-direction: column; gap: 2px">
+          <div style="font-weight: 600; font-size: 15px">Tinta</div>
+          <div style="font-size: 13px; color: #5B5373">#160F2E</div>
+          <div style="font-size: 13px; line-height: 18px; color: #5B5373; margin-top: 6px">Texto y barra lateral</div>
+        </div>
+      </div>
+      <div style="background: #FFFFFF; border: 1px solid #E4DEF2; border-radius: 16px; overflow: hidden">
+        <div style="height: 96px; background: #F8F6FC; border-bottom: 1px solid #E4DEF2"></div>
+        <div style="padding: 12px 14px 16px; display: flex; flex-direction: column; gap: 2px">
+          <div style="font-weight: 600; font-size: 15px">Niebla</div>
+          <div style="font-size: 13px; color: #5B5373">#F8F6FC</div>
+          <div style="font-size: 13px; line-height: 18px; color: #5B5373; margin-top: 6px">Fondo de la aplicación</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px">
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <div style="height: 96px; border-radius: 16px; background: linear-gradient(90deg, #6D28D9 0%, #C2410C 100%); display: flex; align-items: center; padding: 0 20px; color: #FFFFFF; font-family: 'Space Grotesk', system-ui, sans-serif; font-weight: 600; font-size: 18px">Texto blanco</div>
+        <div style="font-size: 13px; line-height: 18px; color: #5B5373"><b style="color: #160F2E">Degradé de acción.</b> Botones y barras destacadas. El blanco pasa contraste en todo el recorrido.</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <div style="height: 96px; border-radius: 16px; background: linear-gradient(90deg, #8B5CF6 0%, #FF8A3D 100%)"></div>
+        <div style="font-size: 13px; line-height: 18px; color: #5B5373"><b style="color: #160F2E">Degradé decorativo.</b> Molécula, gráficos, ilustraciones. Sin texto encima.</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <div style="height: 96px; border-radius: 16px; background: radial-gradient(circle at 18% 20%, rgba(139,92,246,0.55), rgba(139,92,246,0) 55%), radial-gradient(circle at 88% 85%, rgba(255,138,61,0.42), rgba(255,138,61,0) 52%), #130C28"></div>
+        <div style="font-size: 13px; line-height: 18px; color: #5B5373"><b style="color: #160F2E">Fondo oscuro con brillos.</b> Ingreso y portadas. Dentro de la app, fondo claro.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 02 Marca -->
+  <div style="display: flex; flex-direction: column; gap: 24px">
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <div style="font-family: 'Space Grotesk', system-ui, sans-serif; font-weight: 600; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; color: #C2410C">02 · Marca</div>
+      <h2 style="margin: 0; font-family: 'Space Grotesk', system-ui, sans-serif; font-weight: 600; font-size: 32px; line-height: 38px">Molécula de ADN</h2>
+    </div>
+
+    <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px">
+      <div style="height: 460px; border-radius: 24px; overflow: hidden; background-color: #130C28; background-image: radial-gradient(circle at 25% 15%, rgba(139,92,246,0.5), rgba(139,92,246,0) 55%), radial-gradient(circle at 80% 90%, rgba(255,138,61,0.38), rgba(255,138,61,0) 50%), linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px); background-size: auto, auto, 32px 32px, 32px 32px; display: flex; align-items: center; justify-content: center">
+        <svg width="165" height="440" viewBox="0 0 120 400" fill="none" aria-hidden="true" style="filter: drop-shadow(0 0 16px rgba(139,92,246,0.5))">
+          <defs>
+            <linearGradient id="a1" x1="0" y1="0" x2="0" y2="400" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#FF8A3D"></stop><stop offset="1" stop-color="#8B5CF6"></stop></linearGradient>
+            <linearGradient id="b1" x1="0" y1="400" x2="0" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#FF8A3D"></stop><stop offset="1" stop-color="#8B5CF6"></stop></linearGradient>
+            <linearGradient id="r1" x1="20" y1="0" x2="100" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#FF8A3D"></stop><stop offset="1" stop-color="#8B5CF6"></stop></linearGradient>
+          </defs>
+          <path d="M31.7 25H88.3M20 50H100M31.7 75H88.3M31.7 125H88.3M20 150H100M31.7 175H88.3M31.7 225H88.3M20 250H100M31.7 275H88.3M31.7 325H88.3M20 350H100M31.7 375H88.3" stroke="url(#r1)" stroke-width="3" stroke-linecap="round" opacity="0.75"></path>
+          <path d="M60 0C113 33 113 67 60 100C7 133 7 167 60 200C113 233 113 267 60 300C7 333 7 367 60 400" stroke="url(#a1)" stroke-width="6" stroke-linecap="round"></path>
+          <path d="M60 0C7 33 7 67 60 100C113 133 113 167 60 200C7 233 7 267 60 300C113 333 113 367 60 400" stroke="url(#b1)" stroke-width="6" stroke-linecap="round"></path>
+        </svg>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 16px">
+        <div style="flex: 1 1 0; background: #FFFFFF; border: 1px solid #E4DEF2; border-radius: 24px; display: flex; align-items: center; justify-content: center; gap: 40px; padding: 24px">
+          <div style="display: flex; align-items: center; gap: 12px">
+            <div style="width: 44px; height: 44px; border-radius: 13px; background: linear-gradient(135deg, #6D28D9 0%, #C2410C 100%); display: flex; align-items: center; justify-content: center">
+              <svg width="18" height="31" viewBox="0 0 120 200" fill="none" aria-hidden="true">
+                <path d="M31.7 25H88.3M20 50H100M31.7 75H88.3M31.7 125H88.3M20 150H100M31.7 175H88.3" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" opacity="0.8"></path>
+                <path d="M60 0C113 33 113 67 60 100C7 133 7 167 60 200" stroke="#FFFFFF" stroke-width="15" stroke-linecap="round"></path>
+                <path d="M60 0C7 33 7 67 60 100C113 133 113 167 60 200" stroke="#FFFFFF" stroke-width="15" stroke-linecap="round"></path>
+              </svg>
+            </div>
+            <div style="font-family: 'Space Grotesk', system-ui, sans-serif; font-weight: 600; font-size: 22px; letter-spacing: -0.01em">Exoma Clínico</div>
+          </div>
+          <svg width="40" height="80" viewBox="0 0 120 200" fill="none" aria-hidden="true">
+            <defs>
+              <linearGradient id="a2" x1="0" y1="0" x2="0" y2="200" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#C2410C"></stop><stop offset="1" stop-color="#6D28D9"></stop></linearGradient>
+              <linearGradient id="b2" x1="0" y1="200" x2="0" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#C2410C"></stop><stop offset="1" stop-color="#6D28D9"></stop></linearGradient>
+              <linearGradient id="r2" x1="20" y1="0" x2="100" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#C2410C"></stop><stop offset="1" stop-color="#6D28D9"></stop></linearGradient>
+            </defs>
+            <path d="M31.7 25H88.3M20 50H100M31.7 75H88.3M31.7 125H88.3M20 150H100M31.7 175H88.3" stroke="url(#r2)" stroke-width="7" stroke-linecap="round" opacity="0.7"></path>
+            <path d="M60 0C113 33 113 67 60 100C7 133 7 167 60 200" stroke="url(#a2)" stroke-width="13" stroke-linecap="round"></path>
+            <path d="M60 0C7 33 7 67 60 100C113 133 113 167 60 200" stroke="url(#b2)" stroke-width="13" stroke-linecap="round"></path>
+          </svg>
+        </div>
+        <div style="flex: 1 1 0; background: #160F2E; border-radius: 24px; display: flex; align-items: center; justify-content: center; padding: 24px">
+          <div style="display: flex; align-items: center; gap: 12px">
+            <div style="width: 44px; height: 44px; border-radius: 13px; background: linear-gradient(135deg, #8B5CF6 0%, #FF8A3D 100%); display: flex; align-items: center; justify-content: center">
+              <svg width="18" height="31" viewBox="0 0 120 200" fill="none" aria-hidden="true">
+                <path d="M31.7 25H88.3M20 50H100M31.7 75H88.3M31.7 125H88.3M20 150H100M31.7 175H88.3" stroke="#160F2E" stroke-width="10" stroke-linecap="round" opacity="0.8"></path>
+                <path d="M60 0C113 33 113 67 60 100C7 133 7 167 60 200" stroke="#160F2E" stroke-width="15" stroke-linecap="round"></path>
+                <path d="M60 0C7 33 7 67 60 100C113 133 113 167 60 200" stroke="#160F2E" stroke-width="15" stroke-linecap="round"></path>
+              </svg>
+            </div>
+            <div style="font-family: 'Space Grotesk', system-ui, sans-serif; font-weight: 600; font-size: 22px; letter-spacing: -0.01em; color: #F5F1FF">Exoma Clínico</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p style="margin: 0; font-size: 14px; line-height: 22px; color: #5B5373; max-width: 760px">La hélice es de trazo fino y con pocos peldaños, para que se lea como molécula y no como adorno. Se usa grande sobre fondo oscuro (ingreso, portadas) y pequeña como marca en la barra lateral.</p>
+  </div>
+
+  <!-- 03 Tipografía -->
+  <div style="display: flex; flex-direction: column; gap: 24px">
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <div style="font-family: 'Space Grotesk', system-ui, sans-serif; font-weight: 600; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; color: #C2410C">03 · Tipografía</div>
+      <h2 style="margin: 0; font-family: 'Space Grotesk', system-ui, sans-serif; font-weight: 600; font-size: 32px; line-height: 38px">Títulos con carácter, texto para leer</h2>
+    </div>
+    <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px">
+      <div style="background: #FFFFFF; border: 1px solid #E4DEF2; border-radius: 20px; padding: 28px; display: flex; flex-direction: column; gap: 18px">
+        <div style="font-size: 13px; color: #5B5373">Space Grotesk · títulos, números y etiquetas</div>
+        <div style="font-family: 'Space Grotesk', system-ui, sans-serif; font-weight: 600; font-size: 44px; line-height: 48px; letter-spacing: -0.02em">Estudios genéticos</div>
+        <div style="font-family: 'Space Grotesk', system-ui, sans-serif; font-weight: 600; font-size: 26px; line-height: 32px">Historial de cambios</div>
+        <div style="font-family: 'Space Grotesk', system-ui, sans-serif; font-weight: 600; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; color: #C2410C">Etiqueta de sección</div>
+      </div>
+      <div style="background: #FFFFFF; border: 1px solid #E4DEF2; border-radius: 20px; padding: 28px; display: flex; flex-direction: column; gap: 18px">
+        <div style="font-size: 13px; color: #5B5373">IBM Plex Sans · texto, tablas y formularios</div>
+        <div style="font-size: 18px; line-height: 28px">El administrativo registra el pago y el estudio pasa al siguiente paso del proceso.</div>
+        <div style="font-size: 15px; line-height: 24px; color: #5B5373">Cada cambio de estado queda guardado con fecha y usuario, para poder ver después qué pasos se demoran más.</div>
+        <div style="font-size: 13px; line-height: 20px; color: #5B5373">Texto auxiliar de 13 px para ayudas y pies de tabla.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 04 Componentes -->
+  <div style="display: flex; flex-direction: column; gap: 24px">
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <div style="font-family: 'Space Grotesk', system-ui, sans-serif; font-weight: 600; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; color: #C2410C">04 · Componentes</div>
+      <h2 style="margin: 0; font-family: 'Space Grotesk', system-ui, sans-serif; font-weight: 600; font-size: 32px; line-height: 38px">Botones, campos y estados</h2>
+    </div>
+
+    <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px">
+      <div style="background: #FFFFFF; border: 1px solid #E4DEF2; border-radius: 20px; padding: 28px; display: flex; flex-direction: column; gap: 24px">
+        <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center">
+          <button type="button" style="height: 46px; padding: 0 22px; border: 0; border-radius: 12px; background: linear-gradient(90deg, #6D28D9 0%, #C2410C 100%); color: #FFFFFF; font-family: 'Space Grotesk', system-ui, sans-serif; font-weight: 600; font-size: 16px; cursor: pointer; box-shadow: 0 6px 18px rgba(109, 40, 217, 0.28)">Registrar pago</button>
+          <button type="button" style="height: 46px; padding: 0 22px; border: 1.5px solid #6D28D9; border-radius: 12px; background: #FFFFFF; color: #6D28D9; font-family: 'Space Grotesk', system-ui, sans-serif; font-weight: 600; font-size: 16px; cursor: pointer">Ver historial</button>
+          <button type="button" style="height: 46px; padding: 0 14px; border: 0; border-radius: 12px; background: transparent; color: #C2410C; font-family: 'Space Grotesk', system-ui, sans-serif; font-weight: 600; font-size: 16px; cursor: pointer; text-decoration: underline; text-underline-offset: 4px">Cancelar</button>
+        </div>
+        <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px">
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <label for="dni" style="font-size: 14px; font-weight: 500">DNI del paciente</label>
+            <input id="dni" type="text" placeholder="00.000.000" style="height: 46px; box-sizing: border-box; width: 100%; border: 1px solid #8A81A8; border-radius: 12px; padding: 0 14px; font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 16px; color: #160F2E; background: #FFFFFF">
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <label for="obra" style="font-size: 14px; font-weight: 500">Obra social (enfocado)</label>
+            <input id="obra" type="text" value="Obra social" style="height: 46px; box-sizing: border-box; width: 100%; border: 2px solid #6D28D9; border-radius: 12px; padding: 0 14px; font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 16px; color: #160F2E; background: #FFFFFF; box-shadow: 0 0 0 4px rgba(109, 40, 217, 0.16)">
+          </div>
+        </div>
+      </div>
+
+      <div style="background: #FFFFFF; border: 1px solid #E4DEF2; border-radius: 20px; padding: 28px; display: flex; flex-direction: column; gap: 20px">
+        <div style="font-size: 13px; color: #5B5373">Estados del estudio (ilustrativos)</div>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px">
+          <span style="display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 12px; border-radius: 999px; background: #ECE9F5; color: #3B3354; font-size: 13px; font-weight: 500"><span style="width: 8px; height: 8px; border-radius: 50%; background: #3B3354"></span>Presupuestado</span>
+          <span style="display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 12px; border-radius: 999px; background: #EDE7FE; color: #4C1D95; font-size: 13px; font-weight: 500"><span style="width: 8px; height: 8px; border-radius: 50%; background: #6D28D9"></span>Pagado</span>
+          <span style="display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 12px; border-radius: 999px; background: #EDE7FE; color: #4C1D95; font-size: 13px; font-weight: 500"><span style="width: 8px; height: 8px; border-radius: 50%; background: #6D28D9"></span>Turno asignado</span>
+          <span style="display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 12px; border-radius: 999px; background: #FFEDD5; color: #9A3412; font-size: 13px; font-weight: 500"><span style="width: 8px; height: 8px; border-radius: 50%; background: #C2410C"></span>Listo para retirar</span>
+          <span style="display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 12px; border-radius: 999px; background: #FFE4E6; color: #9F1239; font-size: 13px; font-weight: 500"><span style="width: 8px; height: 8px; border-radius: 50%; background: #BE123C"></span>Rechazado</span>
+          <span style="display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 12px; border-radius: 999px; background: #6D28D9; color: #FFFFFF; font-size: 13px; font-weight: 500"><span style="width: 8px; height: 8px; border-radius: 50%; background: #FFFFFF"></span>Completado</span>
+        </div>
+        <div style="border: 1px solid #E4DEF2; border-radius: 16px; overflow: hidden">
+          <div style="height: 4px; background: linear-gradient(90deg, #6D28D9 0%, #C2410C 100%)"></div>
+          <div style="padding: 16px 18px; display: flex; flex-direction: column; gap: 4px">
+            <div style="font-family: 'Space Grotesk', system-ui, sans-serif; font-weight: 600; font-size: 18px">Tarjeta con filo de degradé</div>
+            <div style="font-size: 14px; line-height: 22px; color: #5B5373">El degradé aparece como detalle fino. La tarjeta es blanca y el texto, oscuro.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":2200}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>
