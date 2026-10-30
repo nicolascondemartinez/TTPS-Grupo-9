@@ -1,0 +1,166 @@
+/* Exoma Clínico — tokens y componentes base. Ver DESIGN.md */
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap");
+
+:root {
+  /* Color */
+  --violeta-600: #6d28d9;
+  --violeta-400: #8b5cf6;
+  --violeta-300: #a78bfa;
+  --naranja-600: #c2410c;
+  --naranja-400: #ff8a3d;
+  --tinta: #160f2e;
+  --ground-oscuro: #130c28;
+  --niebla: #f8f6fc;
+  --blanco: #ffffff;
+  --linea: #e4def2;
+  --texto-suave: #5b5373;
+  --texto-suave-oscuro: #bdb3dd;
+  --texto-oscuro: #f5f1ff;
+  --borde-campo: #8a81a8;
+
+  /* Degradés */
+  --grad-accion: linear-gradient(90deg, #6d28d9 0%, #c2410c 100%);
+  --grad-accion-diag: linear-gradient(135deg, #6d28d9 0%, #c2410c 100%);
+  --grad-deco: linear-gradient(90deg, #8b5cf6 0%, #ff8a3d 100%);
+  --grad-deco-diag: linear-gradient(135deg, #8b5cf6 0%, #ff8a3d 100%);
+
+  /* Tipografía */
+  --font-titulo: "Space Grotesk", system-ui, sans-serif;
+  --font-texto: "IBM Plex Sans", system-ui, sans-serif;
+
+  /* Forma */
+  --radio-campo: 12px;
+  --radio-tarjeta: 20px;
+  --radio-pill: 999px;
+  --sombra-boton: 0 6px 18px rgba(109, 40, 217, 0.28);
+  --sombra-foco: 0 0 0 4px rgba(109, 40, 217, 0.16);
+}
+
+body {
+  margin: 0;
+  background: var(--niebla);
+  color: var(--tinta);
+  font-family: var(--font-texto);
+}
+
+h1, h2, h3 {
+  font-family: var(--font-titulo);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+/* Fondo oscuro con brillos y grilla (ingreso, portadas) */
+.fondo-oscuro {
+  background-color: var(--ground-oscuro);
+  color: var(--texto-oscuro);
+  background-image:
+    radial-gradient(circle at 18% 12%, rgba(139, 92, 246, 0.5), rgba(139, 92, 246, 0) 50%),
+    radial-gradient(circle at 70% 95%, rgba(255, 138, 61, 0.34), rgba(255, 138, 61, 0) 46%),
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: auto, auto, 32px 32px, 32px 32px;
+}
+
+/* Etiqueta de sección */
+.etiqueta {
+  font-family: var(--font-titulo);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--naranja-600);
+}
+.fondo-oscuro .etiqueta { color: var(--naranja-400); }
+
+/* Botones */
+.btn {
+  height: 46px;
+  padding: 0 22px;
+  border-radius: var(--radio-campo);
+  font-family: var(--font-titulo);
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+}
+.btn-primario {
+  border: 0;
+  background: var(--grad-accion);
+  color: #fff;
+  box-shadow: var(--sombra-boton);
+}
+.btn-secundario {
+  border: 1.5px solid var(--violeta-600);
+  background: var(--blanco);
+  color: var(--violeta-600);
+}
+.btn-ghost {
+  border: 0;
+  background: transparent;
+  color: var(--naranja-600);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.btn:focus-visible { outline: 3px solid var(--violeta-400); outline-offset: 2px; }
+
+/* Campos */
+.campo {
+  height: 46px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 14px;
+  border: 1px solid var(--borde-campo);
+  border-radius: var(--radio-campo);
+  background: var(--blanco);
+  color: var(--tinta);
+  font-family: var(--font-texto);
+  font-size: 16px;
+}
+.campo::placeholder { color: #6b6384; }
+.campo:focus {
+  outline: none;
+  border: 2px solid var(--violeta-600);
+  padding: 0 13px;
+  box-shadow: var(--sombra-foco);
+}
+
+/* Tarjeta (con filo de degradé opcional) */
+.tarjeta {
+  background: var(--blanco);
+  border: 1px solid var(--linea);
+  border-radius: var(--radio-tarjeta);
+  overflow: hidden;
+}
+.tarjeta-filo::before {
+  content: "";
+  display: block;
+  height: 4px;
+  background: var(--grad-accion);
+}
+
+/* Chips de estado: punto + texto (no solo color) */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 28px;
+  padding: 0 12px;
+  border-radius: var(--radio-pill);
+  font-size: 13px;
+  font-weight: 500;
+}
+.chip::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.chip-neutro   { background: #ece9f5; color: #3b3354; }
+.chip-curso    { background: #ede7fe; color: #4c1d95; }
+.chip-curso::before    { background: #6d28d9; }
+.chip-atencion { background: #ffedd5; color: #9a3412; }
+.chip-atencion::before { background: #c2410c; }
+.chip-error    { background: #ffe4e6; color: #9f1239; }
+.chip-error::before    { background: #be123c; }
+.chip-listo    { background: #6d28d9; color: #fff; }
+.chip-listo::before    { background: #fff; }
