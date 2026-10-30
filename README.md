@@ -12,7 +12,13 @@ backend/                 API Flask del core (MVC)
   seeds/                 datos iniciales
   tests/                 pytest
 frontend/                React (Vite): la interfaz que usan las personas
+  docs/diseno/           guía de diseño (DESIGN.md), tokens y maquetas de referencia
   src/api/client.js      único punto de contacto con el backend
+  src/components/        componentes comunes (botón, campo, tabla, chip de estado, historial…)
+  src/layout/            marco de la app (barra lateral por rol) y de las pantallas de acceso
+  src/constants/         estados del estudio y menú de cada rol
+  src/sesion/            usuario logueado (provisorio hasta que esté el login)
+  src/styles/            tokens.css (colores, tipografías) y estilos de la base
 obras_sociales_api/      base de datos del módulo 6 (pendiente confirmar si sigue en este repo)
 docs/                    base de datos (DER, decisiones de diseño) y decisiones del equipo
 tools/                   scripts auxiliares (generar el DER)
@@ -74,7 +80,13 @@ Hacen falta dos terminales: una para el backend y otra para el frontend.
 | `cp .env.example .env.local` | `copy .env.example .env.local` |
 | `npm run dev` | `npm run dev` |
 
-Abrir http://localhost:5173: con el backend corriendo tiene que decir "API: ok".
+Abrir http://localhost:5173/design para ver todos los componentes y cómo usarlos
+(con el backend corriendo, arriba dice "API: ok"). En desarrollo, la barra lateral tiene
+un selector para cambiar de rol y probar el menú de cada uno.
+
+Para sumar una pantalla: crear el componente (por ejemplo `src/pages/paciente/SacarTurno.jsx`),
+agregar su `<Route>` en `src/App.jsx` y, si va en el menú, su ítem en `src/constants/roles.js`.
+Antes de diseñar algo nuevo, leer `docs/diseno/DESIGN.md`.
 
 ## Documentación
 - Base de datos: `docs/base_de_datos.md`, `docs/der_core.md`, `docs/der_obras_sociales.md`
