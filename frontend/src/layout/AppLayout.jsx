@@ -9,7 +9,7 @@ import { useSesion } from '../sesion/SesionContext.jsx'
 // Marco de las pantallas internas: barra lateral con el menú del rol + contenido.
 // En el celular la barra se convierte en una barra superior con menú desplegable.
 export default function AppLayout() {
-  const { usuario, cambiarRol } = useSesion()
+  const { usuario, cambiarRol, cerrarSesion, modoDev } = useSesion()
   const [menuAbierto, setMenuAbierto] = useState(false)
 
   return (
@@ -43,7 +43,7 @@ export default function AppLayout() {
               <div className="app__usuario-rol">{ROLES[usuario.rol]}</div>
             </div>
           </div>
-          {import.meta.env.DEV && (
+          {modoDev && (
             <label className="app__selector-rol">
               Rol (solo en desarrollo)
               <select className="campo" value={usuario.rol} onChange={(e) => cambiarRol(e.target.value)}>
@@ -51,6 +51,7 @@ export default function AppLayout() {
               </select>
             </label>
           )}
+          <button type="button" className="enlace app__cerrar-sesion" onClick={cerrarSesion}>Cerrar sesión</button>
         </div>
       </aside>
 
