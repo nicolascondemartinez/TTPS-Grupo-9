@@ -9,6 +9,21 @@ class Config:
     ADAPTERS_MODE = os.environ.get("ADAPTERS_MODE", "mock")  # mock | real
     TIMEZONE = "America/Argentina/Buenos_Aires"
 
+    # --- Autenticación ---
+    SESSION_TTL_HOURS = int(os.environ.get("SESSION_TTL_HOURS", "8"))
+    LIMITED_SESSION_TTL_MINUTES = int(os.environ.get("LIMITED_SESSION_TTL_MINUTES", "30"))
+    VERIFICATION_CODE_TTL_MINUTES = int(os.environ.get("VERIFICATION_CODE_TTL_MINUTES", "10"))
+    VERIFICATION_CODE_MAX_ATTEMPTS = int(os.environ.get("VERIFICATION_CODE_MAX_ATTEMPTS", "5"))
+
+    # --- Mails: "console" (simulado: escribe en el log) | "smtp" ---
+    MAIL_MODE = os.environ.get("MAIL_MODE", "console")
+    MAIL_FROM = os.environ.get("MAIL_FROM", "no-responder@exoma.local")
+    SMTP_HOST = os.environ.get("SMTP_HOST", "")
+    SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
+    SMTP_USER = os.environ.get("SMTP_USER", "")
+    SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD", "")
+    SMTP_USE_TLS = os.environ.get("SMTP_USE_TLS", "true").lower() == "true"
+
 
 class DevelopmentConfig(Config):
     DEBUG = True
