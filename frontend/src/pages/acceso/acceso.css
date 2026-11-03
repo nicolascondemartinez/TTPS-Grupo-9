@@ -1,0 +1,21 @@
+/* Mensajes de las pantallas de acceso. Usan los tokens del diseño si existen (con un valor de respaldo). */
+.acceso__error {
+  margin: 0;
+  color: var(--color-error, #b3261e);
+  font-size: 0.875rem;
+}
+.acceso__ayuda {
+  margin: 0;
+  color: var(--color-texto-suave, #5f6b73);
+  font-size: 0.875rem;
+}
+.acceso__cargando {
+  padding: 2rem;
+  text-align: center;
+}
+.acceso__acciones {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
