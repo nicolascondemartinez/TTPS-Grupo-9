@@ -1,4 +1,5 @@
 """Importar todos los módulos registra las tablas en Base.metadata (necesario para Alembic)."""
+from app.db.models.auth import Permiso, RolPermiso, Sesion
 from app.db.models.avisos import Aviso, Configuracion
 from app.db.models.clinico import (Familiar, Paciente, Patologia,
                                    PatologiaSintoma, Sintoma, familiar_sintoma,

@@ -87,6 +87,14 @@ class TipoAviso(str, Enum):
     resultado_disponible = "resultado_disponible"
 
 
+class AlcanceSesion(str, Enum):
+    """Qué puede hacer una sesión: `cambio_contrasena` solo permite cambiar la contraseña
+    (primer ingreso), `completo` es una sesión normal."""
+
+    completo = "completo"
+    cambio_contrasena = "cambio_contrasena"
+
+
 class EstrategiaCdss(str, Enum):
     """Estrategias del módulo 4 (CDSS). Se guardan como valor en `configuracion`."""
 
@@ -108,4 +116,5 @@ PG_ENUMS: list[tuple[str, type[Enum]]] = [
     ("origen_pago", OrigenPago),
     ("concepto_pago", ConceptoPago),
     ("tipo_aviso", TipoAviso),
+    ("alcance_sesion", AlcanceSesion),
 ]
