@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from src.core.enums import RolUsuario
 from src.core.models import Permiso, RolPermiso
-from seeds.seed_permisos import PERMISOS_POR_ROL, cargar_permisos
+from src.core.seeds.seed_permisos import PERMISOS_POR_ROL, cargar_permisos
 
 from .conftest import DEVICE
 
