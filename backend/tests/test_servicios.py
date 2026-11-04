@@ -4,12 +4,12 @@ import smtplib
 
 import pytest
 
-from app.errors import ApiError
-from app.services import password_service
-from app.services.mail_service import (
+from src.core.common.errors import ApiError
+from src.core.auth import password as password_service
+from src.core.avisos.mail_service import (
     ConsoleMailSender, MemoryMailSender, SmtpMailSender, crear_mail_sender, enviar_codigo_verificacion,
 )
-from app.services.validation import validar_cambio_contrasena, validar_login, validar_verificacion
+from src.core.common.validation import validar_cambio_contrasena, validar_login, validar_verificacion
 
 
 def test_las_contrasenas_se_guardan_con_argon2id():

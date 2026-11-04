@@ -5,26 +5,25 @@
 
       TEST_DATABASE_URL=postgresql+psycopg2://usuario:clave@localhost:5432/ttps_test poetry run pytest
 
-  Si TEST_DATABASE_URL no está definida, esos tests se saltean. La base se migra sola (alembic upgrade head)
-  y se vacía antes de cada test.
+  Si TEST_DATABASE_URL no está definida, esos tests se saltean. La base se recrea sola (drop_all + 
+  create_all) y se vacía antes de cada test.
 """
 import os
 import re
-from pathlib import Path
 
 import pytest
 from flask import Blueprint
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import Session
 
-from app import create_app
-from app.controllers.security import require_permission
-from app.db.enums import RolUsuario
-from app.db.models import Dispositivo, Usuario
-from app.services.auth_service import huella_dispositivo
-from app.services.mail_service import MemoryMailSender
-from app.services.password_service import hash_contrasena
-from seeds.seed_permisos import cargar_permisos
+from src.web import create_app
+from src.web.security import require_permission
+from src.core.enums import RolUsuario
+from src.core.models import Dispositivo, Usuario
+from src.core.auth.service import huella_dispositivo
+from src.core.avisos.mail_service import MemoryMailSender
+from src.core.auth.password import hash_contrasena
+from src.core.seeds.seed_permisos import cargar_permisos
 
 TEST_DATABASE_URL = os.environ.get("TEST_DATABASE_URL")
 DEVICE = "dispositivo-de-prueba-0123456789"
@@ -41,23 +40,14 @@ def client():
 def database_url():
     if not TEST_DATABASE_URL:
         pytest.skip("Definir TEST_DATABASE_URL para correr los tests que usan la base")
-    from alembic import command
-    from alembic.config import Config
+    from src.core.database import Base, import_all_models
 
-    base = Path(__file__).resolve().parent.parent
-    cfg = Config(str(base / "alembic.ini"))
-    cfg.set_main_option("script_location", str(base / "alembic"))
-    anterior = os.environ.get("DATABASE_URL")
-    os.environ["DATABASE_URL"] = TEST_DATABASE_URL  # alembic/env.py lee esta variable
-    try:
-        command.upgrade(cfg, "head")
-    finally:
-        if anterior is None:
-            os.environ.pop("DATABASE_URL", None)
-        else:
-            os.environ["DATABASE_URL"] = anterior
+    import_all_models()
+    engine = create_engine(TEST_DATABASE_URL)
+    Base.metadata.drop_all(bind=engine)
+    Base.metadata.create_all(bind=engine)
+    engine.dispose()
     return TEST_DATABASE_URL
-
 
 _ruta_de_prueba = Blueprint("ruta_de_prueba", __name__)
 

@@ -3,8 +3,8 @@ from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import select, update
 
-from app.db.enums import RolUsuario
-from app.db.models import CodigoVerificacion, Sesion, Usuario
+from src.core.enums import RolUsuario
+from src.core.models import CodigoVerificacion, Sesion, Usuario
 
 from .conftest import CONTRASENA, DEVICE, OTRO_DEVICE, codigo_del_ultimo_mail
 

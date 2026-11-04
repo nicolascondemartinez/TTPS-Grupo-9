@@ -4,8 +4,8 @@ import re
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.db.enums import RolUsuario
-from app.db.models import Permiso, RolPermiso
+from src.core.enums import RolUsuario
+from src.core.models import Permiso, RolPermiso
 from seeds.seed_permisos import PERMISOS_POR_ROL, cargar_permisos
 
 from .conftest import DEVICE

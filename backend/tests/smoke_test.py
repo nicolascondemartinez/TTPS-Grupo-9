@@ -9,9 +9,9 @@ from decimal import Decimal
 
 from sqlalchemy.exc import IntegrityError
 
-from app.db.enums import *  # noqa: F403
-from app.db.models import *  # noqa: F403
-from app.db.session import SessionLocal
+from src.core.enums import *  # noqa: F403
+from src.core.models import *  # noqa: F403
+from src.core.database import nueva_sesion
 
 ok = 0
 
@@ -43,7 +43,7 @@ def usuario(email, rol):
     return Usuario(email=email, password_hash="x", nombre="N", apellido="A", telefono="1", rol=rol)
 
 
-with SessionLocal() as s:
+with nueva_sesion() as s:
     prov = Provincia(nombre="Provincia de prueba")
     medico_u, gerente_u, paciente_u, transp_u = (
         usuario("medico@x.com", RolUsuario.medico), usuario("gerente@x.com", RolUsuario.gerente_medico),
