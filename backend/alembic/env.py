@@ -1,6 +1,9 @@
 """Alembic del core. Usa DATABASE_URL (conexión directa o session pooler de Supabase, puerto 5432)."""
 import os
 
+from dotenv import load_dotenv
+load_dotenv()  # lee backend/.env (DATABASE_URL)
+
 from alembic import context
 from sqlalchemy import create_engine, pool
 
