@@ -4,13 +4,24 @@
 
 ```
 backend/                 API Flask del core (MVC)
-  app/db/models/         M · modelos SQLAlchemy (tablas)
-  app/controllers/       C · rutas de la API (un archivo por área)
-  app/views/             V · arman el JSON que devuelve cada ruta
-  app/services/          reglas de negocio, testeables sin HTTP
-  alembic/               migraciones de la base
-  seeds/                 datos iniciales
-  tests/                 pytest
+  main.py                arranque local: create_app() + app.run(debug=True)
+  src/
+    config.py            configuración por entorno (variables del .env)
+    core/                M · negocio y base de datos, agrupado por dominio
+      database.py        Base, sesión por request, reset_db y seed_db
+      enums.py           enums de Postgres (estados, roles…)
+      models.py          importa todos los modelos (lo usa create_all)
+      common/            errors.py, validation.py
+      auth/              models.py, service.py (login), password.py
+      usuarios/ clinico/ estudios/ pagos/ turnos/ logistica/    models.py de cada dominio
+      avisos/            models.py, mail_service.py
+      seeds/             datos iniciales (permisos, catálogos, usuarios demo)
+    web/                 C + V
+      __init__.py        create_app(): config, CORS, base, errores, rutas y comandos reset-db / seed-db
+      security.py        autenticación por token y @require_permission
+      controllers/       C · rutas de la API (un archivo por área, bajo /api)
+      views/             V · arman el JSON que devuelve cada ruta
+  tests/                 pytest, una carpeta por dominio (auth/, health/)
 frontend/                React (Vite): la interfaz que usan las personas
   docs/diseno/           guía de diseño (DESIGN.md), tokens y maquetas de referencia
   src/api/client.js      único punto de contacto con el backend
@@ -19,24 +30,36 @@ frontend/                React (Vite): la interfaz que usan las personas
   src/constants/         estados del estudio y menú de cada rol
   src/sesion/            sesión del usuario (login, token, guards de rutas)
   src/styles/            tokens.css (colores, tipografías) y estilos de la base
-obras_sociales_api/      base de datos del módulo 6 (pendiente confirmar si sigue en este repo)
 docs/                    base de datos (DER, decisiones de diseño) y decisiones del equipo
 tools/                   scripts auxiliares (generar el DER)
 ```
 
 Cada capa tiene un ejemplo funcionando: la ruta `GET /api/health`
-(`controllers/health_controller.py` → `views/health_view.py`) y la pantalla de `frontend/src/App.jsx`
+(`src/web/controllers/health.py` → `src/web/views/health_view.py`) y la pantalla de `frontend/src/App.jsx`
 que la consulta. Para sumar algo nuevo, copiar ese mismo patrón.
 
 ## Cómo funciona un pedido (MVC)
 
-Pantalla de React → `src/api/client.js` → **controlador** (`app/controllers/`) → **servicio** (`app/services/`)
-→ **modelos** (`app/db/models/`) → el controlador responde con una **vista** (`app/views/`) → React la muestra.
+Pantalla de React → `src/api/client.js` → **controlador** (`src/web/controllers/`) → **servicio**
+(`src/core/<dominio>/service.py`) → **modelos** (`src/core/<dominio>/models.py`) → el controlador responde con una
+**vista** (`src/web/views/`) → React la muestra. `web` importa de `core`, nunca al revés.
 
 Reglas del equipo:
 - Los controladores no tienen lógica de negocio: validan permisos y llaman a un servicio.
 - Ningún controlador devuelve un modelo directo: siempre pasa por una vista.
 - Los cambios de estado del estudio se registran siempre en `estudio_historial_estado` (auditoría).
+
+| Si buscás… | Está en… |
+|---|---|
+| una tabla de la base | `src/core/<dominio>/models.py` |
+| login, código de verificación, contraseñas | `src/core/auth/service.py` y `password.py` |
+| permisos de cada rol | `src/core/seeds/seed_permisos.py` y `@require_permission` en `src/web/security.py` |
+| qué responde un endpoint | `src/web/controllers/<área>.py` y `src/web/views/` |
+| errores de la API | `src/core/common/errors.py` |
+| envío de mails | `src/core/avisos/mail_service.py` |
+| datos iniciales | `src/core/seeds/` |
+| configuración y variables de entorno | `src/config.py` y `backend/.env` |
+| cómo arranca la app | `main.py` y `src/web/__init__.py` |
 
 ## Puesta en marcha
 
@@ -61,21 +84,22 @@ Hacen falta dos terminales: una para el backend y otra para el frontend.
    Los comandos se ejecutan con `poetry run ...` (no hace falta activar el entorno a mano).
    Si querés activarlo igual: `poetry env activate` imprime el comando para tu terminal.
 
-2. Completar el `.env` (pedir los datos de Supabase al grupo) y levantar:
+2. Completar el `.env` (`DATABASE_URL`: una base local o la de Supabase; pedir los datos al grupo) y levantar:
 
    ```bash
-   poetry run alembic upgrade head            # crea las tablas (ver docs/base_de_datos.md)
-   poetry run python -m seeds.seed_catalogos
-   poetry run python -m seeds.seed_permisos   # permisos de cada rol (ver docs/login.md)
-   poetry run python -m seeds.seed_usuarios_demo   # usuarios de prueba, uno por rol (solo desarrollo)
-   poetry run flask run                       # http://localhost:5001/api/health
-   poetry run pytest                          # tests
+   poetry run flask --app main:create_app reset-db     # recrea las tablas (ver docs/base_de_datos.md)
+   poetry run flask --app main:create_app seed-db      # permisos, catálogos y usuarios de prueba, uno por rol (solo desarrollo)
+   poetry run python main.py                           # http://localhost:5001/api/health
+   poetry run pytest                                   # tests
    ```
 
+   **No hay migraciones.** `reset-db` borra todos los datos de la base de `DATABASE_URL`: si cambia un modelo,
+   se corren `reset-db` y `seed-db`. Los tests que usan la base necesitan `TEST_DATABASE_URL`, una base aparte
+   que se borra y recrea en cada corrida (ver `docs/login.md`).
    Para agregar una dependencia: `poetry add <paquete>` (y se versionan `pyproject.toml` y `poetry.lock`).
    Los tests que usan la base necesitan `TEST_DATABASE_URL` (una base de prueba aparte, ver `docs/login.md`).
 
-   El puerto es 5001 (configurado en `backend/.flaskenv`) porque en macOS el 5000 lo usa AirPlay.
+   El puerto es 5001 porque en macOS el 5000 lo usa AirPlay. Para usar otro sin tocar el repo, poner `FLASK_RUN_PORT` en `backend/.env` y `VITE_API_URL` en `frontend/.env.local` (ninguno de los dos se sube).
 
 ### Frontend
 

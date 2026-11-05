@@ -1,11 +1,11 @@
 # Base de datos — Sistema de Exoma Clínico
 
-PostgreSQL (Supabase) + SQLAlchemy 2.0 + Alembic. Dos proyectos independientes, cada uno con su propio Alembic:
+PostgreSQL + SQLAlchemy 2.0, sin migraciones: `reset-db` borra y recrea las tablas y los enums desde los modelos
+(`backend/src/core/**/models.py`) y `seed-db` carga los datos iniciales. Todo vive en el schema `public`.
 
-| Carpeta | Qué es | Dónde vive en Postgres |
-|---|---|---|
-| `backend/` | Sistema principal (37 tablas, 11 enums) | schema `public` |
-| `obras_sociales_api/` | Módulo 6 (Obras Sociales), API que consumen los demás grupos (3 tablas) | schema `obras_sociales` |
+El módulo 6 (Obras Sociales) es una API aparte, desplegada por separado y fuera de este repo: el core la consume
+y guarda en `cobertura` una foto (id externo, nombre, %) de lo que devuelve, sin FK entre ambos.
+Diagrama (Mermaid, generado desde los modelos): `docs/der_core.md`.
 
 Sin FK entre ambos: el core guarda en `cobertura` una foto (id externo, nombre, %) de lo que devuelve la API.
 Diagramas (Mermaid, generados desde los modelos): `docs/der_core.md`, `docs/der_obras_sociales.md`.
@@ -13,19 +13,17 @@ Diagramas (Mermaid, generados desde los modelos): `docs/der_core.md`, `docs/der_
 ## Puesta en marcha
 
 ```bash
-cd backend                    # (o obras_sociales_api)
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-export DATABASE_URL="postgresql+psycopg2://USER:PASS@HOST:5432/postgres"   # conexión directa / session pooler
-alembic upgrade head          # crea tablas, enums, índices y activa RLS
-python -m seeds.seed_catalogos                         # core: 24 provincias, 5 patologías, config CDSS
-python -m seeds.seed_obras_sociales --csv obras.csv    # módulo 6: CSV con columnas rnos,nombre,sigla
-python -m tests.smoke_test    # prueba constraints (hace rollback, no deja datos)
+cd backend
+poetry install --no-root
+# DATABASE_URL en backend/.env: postgresql+psycopg2://USER:PASS@HOST:5432/DB
+poetry run flask --app main:create_app reset-db   # borra y crea tablas, enums e índices, y activa RLS
+poetry run flask --app main:create_app seed-db    # provincias, patologías, config CDSS, permisos y usuarios demo
 ```
 
-Supabase: para la app en runtime podés usar el pooler en modo transacción (puerto 6543) con psycopg2; para Alembic
-usá la conexión directa o el session pooler (5432). Ambos proyectos pueden apuntar a la misma base: cada uno
-lleva su propia tabla de versiones (`public.alembic_version` y `obras_sociales.alembic_version`).
+`reset-db` **borra todos los datos** de la base de `DATABASE_URL`. Si cambia un modelo, se vuelve a correr junto con `seed-db`.
+
+Supabase: para correr la app podés usar el pooler en modo transacción (puerto 6543) con psycopg2; para `reset-db`
+usá la conexión directa o el session pooler (5432).
 
 ## Decisiones de diseño
 
@@ -38,7 +36,7 @@ lleva su propia tabla de versiones (`public.alembic_version` y `obras_sociales.a
 - `estudio_historial_estado` registra cada cambio de estado (tablero de tiempos y cuellos de botella).
 - Datos de otros módulos: `sintoma` y `gen` son cachés locales (código único); variantes, obra social y cupón se guardan como código + foto.
 - Archivos (PDFs, CSV, datos crudos) en Supabase Storage; la base guarda solo la ruta/URL.
-- RLS activado en todas las tablas (sin políticas): la API REST automática de Supabase no puede leerlas;
+- RLS activado en todas las tablas (sin políticas): reset_db() lo activa en todas las tablas; no hace falta repetirlo;
   la app accede por conexión directa. Las tablas nuevas deben repetir `ENABLE ROW LEVEL SECURITY`.
 
 ### Decisiones que tomé sin que me las confirmaras (revisalas)
@@ -51,7 +49,7 @@ lleva su propia tabla de versiones (`public.alembic_version` y `obras_sociales.a
 6. `patologia_sintoma`: un solo síntoma cardinal por patología (índice único parcial).
 7. `cobertura` no tiene estado propio: autorizada/rechazada se deduce del estado del estudio y su historial.
 8. `paciente.familiograma_url` es opcional (el cliente dijo que puede quedar vacío).
-9. Módulo 6: `consumidor` (API key hasheada por grupo) y `solicitud_estudio.referencia_externa` (id del estudio en el core de cada grupo).
+
 
 ## Queda en la aplicación (no en la base)
 
@@ -64,5 +62,4 @@ si creás un `Medico` y un `Paciente` en la misma operación, hacé `session.flu
 
 ## Verificado
 
-PostgreSQL 16, SQLAlchemy 2.0.43, Alembic 1.16.5: `upgrade → downgrade → upgrade` sin errores, `alembic check` sin diferencias
-entre modelos y migraciones, ambos schemas conviviendo en la misma base, y 27 pruebas de constraints (`tests/smoke_test.py`).
+`reset-db`, `seed-db` y la suite de tests (`poetry run pytest` con `TEST_DATABASE_URL`) corren sin errores sobre PostgreSQL local.

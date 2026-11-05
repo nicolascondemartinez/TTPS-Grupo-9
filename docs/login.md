@@ -107,7 +107,7 @@ todos `@exoma.test`. Solo crean la fila de `usuario`: los perfiles (matrícula, 
 ## Tests
 
 - Backend: `TEST_DATABASE_URL=postgresql+psycopg2://usuario:clave@localhost:5432/ttps_test poetry run pytest`
-  (una base vacía aparte: el test la migra con Alembic y la vacía antes de cada prueba; sin la variable, esos tests se saltean).
+  (una base vacía aparte: el test la recrea desde los modelos y la vacía antes de cada prueba; sin la variable, esos tests se saltean).
 - Frontend (opcional): `npm i -D vitest jsdom @testing-library/react @testing-library/user-event @testing-library/jest-dom`,
   agregar `"test": "vitest run"` a los scripts y correr `npm test`. Usan un `fetch` simulado con el contrato de esta página.
 
