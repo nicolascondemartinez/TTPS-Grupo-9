@@ -113,6 +113,10 @@ def reset_db() -> None:
     print("Reseteando la base...", flush=True)
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
+    with engine.begin() as conexion:  # RLS sin políticas (antes lo hacían las migraciones)
+        for tabla in Base.metadata.sorted_tables:
+            esquema = tabla.schema or "public"
+            conexion.execute(text(f'ALTER TABLE "{esquema}"."{tabla.name}" ENABLE ROW LEVEL SECURITY'))
     print("Base reseteada.", flush=True)
 
 

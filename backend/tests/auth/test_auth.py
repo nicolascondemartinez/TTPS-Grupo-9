@@ -6,7 +6,7 @@ from sqlalchemy import select, update
 from src.core.enums import RolUsuario
 from src.core.models import CodigoVerificacion, Sesion, Usuario
 
-from .conftest import CONTRASENA, DEVICE, OTRO_DEVICE, codigo_del_ultimo_mail
+from ..conftest import CONTRASENA, DEVICE, OTRO_DEVICE, codigo_del_ultimo_mail
 
 NUEVA = "Otra-clave-2026"
 

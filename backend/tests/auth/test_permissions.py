@@ -8,7 +8,7 @@ from src.core.enums import RolUsuario
 from src.core.models import Permiso, RolPermiso
 from src.core.seeds.seed_permisos import PERMISOS_POR_ROL, cargar_permisos
 
-from .conftest import DEVICE
+from ..conftest import DEVICE
 
 
 def test_require_permission_deja_pasar_al_rol_que_lo_tiene(api, crear_usuario):
