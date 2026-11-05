@@ -41,7 +41,7 @@ La contraseña actual incorrecta es 400 y no 401 a propósito: un 401 con token 
 ## Proteger un endpoint (backend)
 
 ```python
-from app.controllers.security import require_auth, require_permission
+from src.web.security import require_auth, require_permission
 
 @bp.get("/pacientes")
 @require_permission("paciente_listar")     # sesión completa + el rol tiene ese permiso
@@ -57,8 +57,8 @@ de negocio. Por regla del equipo, el controlador valida permisos y llama a un se
 
 ## Agregar un permiso
 
-Los permisos siguen el patrón `modulo_accion` (por ejemplo `estudio_crear`). Se agregan en `backend/seeds/seed_permisos.py`
-(una línea bajo cada rol que lo tiene) y se cargan con `poetry run python -m seeds.seed_permisos` (se puede repetir sin problema).
+Los permisos siguen el patrón `modulo_accion` (por ejemplo `estudio_crear`). Se agregan en `backend/src/core/seeds/seed_permisos.py`
+(una línea bajo cada rol que lo tiene) y se cargan corriendo `reset-db` y `seed-db` (ver README).
 Los permisos de cada rol son una **matriz inicial** armada desde los escenarios: cada responsable ajusta los de su área.
 
 ## Frontend
@@ -95,12 +95,12 @@ SMTP_PASSWORD=
 SMTP_USE_TLS=true
 ```
 
-Con `MAIL_MODE=console` el código llega a la terminal donde corre `flask run` (línea `[MAIL SIMULADO]`).
+Con `MAIL_MODE=console` el código llega a la terminal donde corre el backend (`python main.py`) (línea `[MAIL SIMULADO]`).
 En producción, `SECRET_KEY` tiene que ser un valor propio (con él se firma el hash de los códigos).
 
 ## Usuarios de prueba
 
-`poetry run python -m seeds.seed_usuarios_demo` crea (solo en desarrollo) un usuario por rol con la contraseña `Exoma2026!`:
+`seed-db` crea (solo en desarrollo) un usuario por rol con la contraseña `Exoma2026!`:
 `paciente@`, `medico@`, `gerente@`, `administrativo@`, `bioinformatico@`, `transportista@` y `paciente.nuevo@` (primer ingreso),
 todos `@exoma.test`. Solo crean la fila de `usuario`: los perfiles (matrícula, DNI, etc.) los crea el registro de usuarios.
 

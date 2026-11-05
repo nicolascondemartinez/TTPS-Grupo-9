@@ -5,10 +5,8 @@ PostgreSQL + SQLAlchemy 2.0, sin migraciones: `reset-db` borra y recrea las tabl
 
 El módulo 6 (Obras Sociales) es una API aparte, desplegada por separado y fuera de este repo: el core la consume
 y guarda en `cobertura` una foto (id externo, nombre, %) de lo que devuelve, sin FK entre ambos.
-Diagrama (Mermaid, generado desde los modelos): `docs/der_core.md`.
 
 Sin FK entre ambos: el core guarda en `cobertura` una foto (id externo, nombre, %) de lo que devuelve la API.
-Diagramas (Mermaid, generados desde los modelos): `docs/der_core.md`, `docs/der_obras_sociales.md`.
 
 ## Puesta en marcha
 

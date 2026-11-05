@@ -31,7 +31,6 @@ frontend/                React (Vite): la interfaz que usan las personas
   src/sesion/            sesión del usuario (login, token, guards de rutas)
   src/styles/            tokens.css (colores, tipografías) y estilos de la base
 docs/                    base de datos (DER, decisiones de diseño) y decisiones del equipo
-tools/                   scripts auxiliares (generar el DER)
 ```
 
 Cada capa tiene un ejemplo funcionando: la ruta `GET /api/health`
@@ -120,6 +119,6 @@ agregar su `<Route>` en `src/App.jsx` y, si va en el menú, su ítem en `src/con
 Antes de diseñar algo nuevo, leer `docs/diseno/DESIGN.md`.
 
 ## Documentación
-- Base de datos: `docs/base_de_datos.md`, `docs/der_core.md`, `docs/der_obras_sociales.md`
+- Base de datos: `docs/base_de_datos.md`
 - Login, permisos y protección de rutas: `docs/login.md`
 - Decisiones del equipo: `docs/decisiones.md`
