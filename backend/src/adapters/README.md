@@ -9,7 +9,7 @@ y **real** (llama a la API). Cuál se usa se elige con variables de entorno, sin
 |-------------------|---------------------------------------------------------|
 | `MODULO_MODE`     | `mock` o `real`. Vacía: usa `ADAPTERS_MODE` (y si no, `mock`) |
 | `MODULO_API_URL`  | URL base de la API real (obligatoria en modo `real`)    |
-| `MODULO_API_KEY`  | Se manda en el header `X-API-Key`                       |
+| `MODULO_API_KEY`  | Se manda en el header `X-API-Key` (configurable por módulo) |
 | `MODULO_TIMEOUT`  | Segundos, opcional (10 por defecto)                     |
 
 `MODULO` es el nombre del módulo en mayúsculas: `OBRAS_SOCIALES_MODE`, `OBRAS_SOCIALES_API_URL`, ...
@@ -109,8 +109,8 @@ def get_obras_sociales() -> ObrasSociales:
     return crear_adaptador("OBRAS_SOCIALES", mock=ObrasSocialesMock, real=ObrasSocialesReal)
 ```
 
-Si la API usa otro header (por ejemplo `Authorization: Bearer ...`), el adaptador real lo ajusta en
-su `__init__`: `http.session.headers["Authorization"] = f"Bearer {...}"`.
+Si la API espera la key en otro header, pasalo a la fábrica:
+`crear_adaptador("BIOINFORMATICA", ..., header_api_key="apikey")`.
 
 ## Tests
 

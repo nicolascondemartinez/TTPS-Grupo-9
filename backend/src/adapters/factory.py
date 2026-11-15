@@ -43,11 +43,12 @@ def leer_config(modulo: str) -> ConfigAdaptador:
     )
 
 
-def crear_adaptador(modulo: str, mock: Callable[[], T], real: Callable[[HttpClient], T]) -> T:
+def crear_adaptador(modulo: str, mock: Callable[[], T], real: Callable[[HttpClient], T],
+                    header_api_key: str = "X-API-Key") -> T:
     """`mock` se llama sin argumentos; `real` recibe un HttpClient ya configurado para el módulo."""
     config = leer_config(modulo)
     if config.modo == "mock":
         return mock()
     if not config.url:
         raise RuntimeError(f"{config.modulo}_MODE=real requiere {config.modulo}_API_URL")
-    return real(HttpClient(config.modulo, config.url, config.api_key, config.timeout))
+    return real(HttpClient(config.modulo, config.url, config.api_key, config.timeout, header_api_key))

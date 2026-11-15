@@ -36,6 +36,17 @@ def test_modo_del_modulo_elige_real(monkeypatch):
     assert adaptador.http.session.headers["X-API-Key"] == "clave"
 
 
+def test_header_de_api_key_configurable(monkeypatch):
+    monkeypatch.setenv("PRUEBA_MODE", "real")
+    monkeypatch.setenv("PRUEBA_API_URL", "https://api.example.test")
+    monkeypatch.setenv("PRUEBA_API_KEY", "clave")
+
+    adaptador = crear_adaptador("PRUEBA", mock=Mock, real=Real, header_api_key="apikey")
+
+    assert adaptador.http.session.headers["apikey"] == "clave"
+    assert "X-API-Key" not in adaptador.http.session.headers
+
+
 def test_modo_del_modulo_tiene_prioridad_sobre_el_global(monkeypatch):
     monkeypatch.setenv("ADAPTERS_MODE", "real")
     monkeypatch.setenv("PRUEBA_MODE", "mock")
