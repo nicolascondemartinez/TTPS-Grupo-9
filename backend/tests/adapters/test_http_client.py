@@ -46,6 +46,13 @@ def test_devuelve_el_json_y_manda_timeout_y_api_key():
     assert http.session.headers["X-API-Key"] == "clave"
 
 
+@pytest.mark.parametrize("path", ["", "/"])
+def test_path_vacio_usa_la_url_base_sin_barra_final(path):
+    http, sesion = cliente(contenido=b"{}")
+    http.post(path, {})
+    assert sesion.pedidos[0][1] == "https://api.example.test"
+
+
 def test_respuesta_vacia_devuelve_none():
     http, _ = cliente(status=204)
     assert http.post("/algo", {"a": 1}) is None

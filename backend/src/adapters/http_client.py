@@ -38,7 +38,8 @@ class HttpClient:
 
     def request(self, method: str, path: str, **kwargs):
         """Devuelve el JSON de la respuesta (None si viene vacía) o lanza un AdaptadorError."""
-        url = f"{self.base_url}/{path.lstrip('/')}"
+        ruta = path.lstrip("/")
+        url = f"{self.base_url}/{ruta}" if ruta else self.base_url
         try:
             response = self.session.request(method, url, timeout=self.timeout, **kwargs)
         except requests.Timeout:
