@@ -17,6 +17,7 @@ import SubirArchivo from '../components/SubirArchivo.jsx'
 import Tabla from '../components/Tabla.jsx'
 import Tarjeta from '../components/Tarjeta.jsx'
 import { ESTADOS_ESTUDIO } from '../constants/estados.js'
+import Mapa from '../components/Mapa.jsx'
 
 // Catálogo de la base de frontend: muestra cada componente y cómo usarlo.
 // Datos de ejemplo solamente.
@@ -30,6 +31,17 @@ const HISTORIAL = [
   { id: 2, titulo: 'Pagado', fecha: '29/10/2026 18:02', usuario: 'Paciente' },
   { id: 1, titulo: 'Creado', fecha: '28/10/2026 09:40', usuario: 'Médico tratante' },
 ]
+const CENTROS_EJEMPLO = [
+  { id: 'c1', nombre: 'Stamboulian Belgrano', direccion: 'Av. del Libertador 5868, CABA', latitud: -34.55819, longitud: -58.4468, recogido: true },
+  { id: 'c2', nombre: 'Stamboulian Barrio Norte', direccion: 'French 3085, CABA', latitud: -34.59015, longitud: -58.4034, recogido: false },
+  { id: 'c3', nombre: 'Centro Médico Rossi Microcentro', direccion: 'Esmeralda 141, CABA', latitud: -34.60657, longitud: -58.37772, recogido: false },
+]
+const TRANSPORTISTA_EJEMPLO = {
+  nombre: 'Tomás Transportista',
+  latitud: -34.575,
+  longitud: -58.42,
+  provincia: 'Ciudad Autónoma de Buenos Aires',
+}
 
 function Seccion({ etiqueta, titulo, codigo, children }) {
   return (
@@ -49,6 +61,7 @@ export default function Design() {
   const [seleccionada, setSeleccionada] = useState(1)
   const [modalAbierto, setModalAbierto] = useState(false)
   const notificar = useNotificar()
+  const [centroElegido, setCentroElegido] = useState('c2')
 
   useEffect(() => {
     api.get('/health').then((d) => setApiEstado(d.status)).catch(() => setApiEstado('sin conexión'))
@@ -161,6 +174,19 @@ export default function Design() {
         >
           El turno del lunes 10 de noviembre a las 9:15 queda libre. Vas a poder sacar otro.
         </ModalConfirmacion>
+      </Seccion>
+      <Seccion
+        etiqueta="Mapa"
+        titulo="Centros de extracción y seguimiento"
+        codigo={`<Mapa centros={centros} centroSeleccionadoId={id} onSeleccionarCentro={(c) => setId(c.id)} recorrido={paradas} transportista={transportista} />`}
+      >
+        <Mapa centros={CENTROS_EJEMPLO} centroSeleccionadoId={centroElegido} onSeleccionarCentro={(c) => {
+            setCentroElegido(c.id)
+            notificar(`Centro elegido: ${c.nombre}`, 'info')
+          }}
+          recorrido={CENTROS_EJEMPLO}
+          transportista={TRANSPORTISTA_EJEMPLO}
+        />
       </Seccion>
     </div>
   )
