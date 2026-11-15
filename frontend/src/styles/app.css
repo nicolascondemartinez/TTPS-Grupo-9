@@ -272,3 +272,41 @@ select.campo { appearance: auto; }
 .notificacion__cerrar:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
 @keyframes notificacion-entra { from { opacity: 0; transform: translateY(8px); } }
 @media (prefers-reduced-motion: reduce) { .notificacion { animation: none; } }
+
+/* ---------- Mapa ---------- */
+.mapa-contenedor {
+  position: relative; z-index: 0;
+  width: 100%; height: 380px;
+  border-radius: var(--radio-tarjeta); border: 1px solid var(--linea); overflow: hidden;
+}
+.mapa-contenedor .leaflet-container {
+  width: 100%; height: 100%; font-family: var(--font-texto);
+}
+
+/* Pines personalizados (L.divIcon) */
+.mapa-pin-wrapper { background: transparent; border: 0; }
+.mapa-pin {
+  display: flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--blanco); color: var(--violeta-600);
+  border: 3px solid var(--violeta-600);
+  box-shadow: 0 3px 10px rgba(22, 15, 46, 0.28);
+  font-size: 12px; font-weight: 600;
+  transition: transform 0.15s ease;
+}
+.mapa-pin--seleccionado {
+  background: var(--violeta-600); color: var(--blanco);
+  transform: scale(1.2); box-shadow: 0 0 0 4px rgba(109, 40, 217, 0.25);
+}
+.mapa-pin--recogido {
+  background: #ecfdf5; color: #047857; border-color: #047857;
+}
+.mapa-pin--transportista {
+  width: 34px; height: 34px;
+  background: var(--naranja-600); color: var(--blanco);
+  border: 3px solid var(--blanco);
+  box-shadow: 0 4px 14px rgba(194, 65, 12, 0.45);
+}
+
+.mapa-popup__titulo { font-family: var(--font-titulo); font-weight: 600; color: var(--tinta); margin: 0 0 4px; }
+.mapa-popup__texto { font-size: 13px; color: var(--texto-suave); margin: 0; }
