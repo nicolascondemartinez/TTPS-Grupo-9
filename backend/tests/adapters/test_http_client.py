@@ -72,6 +72,23 @@ def test_5xx_y_429_no_disponible(status):
         http.get("/x")
 
 
+def test_no_disponible_conserva_status_cuerpo_y_retry_after():
+    sesion = SesionFalsa(status=429, contenido=b'{"detail": "espera"}')
+    original = sesion.request
+
+    def con_retry_after(*args, **kwargs):
+        response = original(*args, **kwargs)
+        response.headers["Retry-After"] = "7"
+        return response
+
+    sesion.request = con_retry_after
+    http = HttpClient("PRUEBA", "https://api.example.test", session=sesion)
+    with pytest.raises(AdaptadorNoDisponible) as e:
+        http.get("/x")
+    assert (e.value.status_externo, e.value.cuerpo, e.value.reintentar_en) == (429, {"detail": "espera"}, 7)
+    assert e.value.detalle["reintentar_en"] == 7
+
+
 @pytest.mark.parametrize("status", [401, 403])
 def test_401_403_no_autorizado_conserva_status_y_cuerpo(status):
     http, _ = cliente(status=status, contenido=b'{"message": "no"}')

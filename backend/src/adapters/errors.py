@@ -14,11 +14,16 @@ class AdaptadorError(ApiError):
 
 
 class AdaptadorNoDisponible(AdaptadorError):
-    """Timeout, conexión rechazada o error 5xx/429 del módulo externo."""
+    """Timeout, conexión rechazada o error 5xx/429 del módulo externo. Con respuesta HTTP, `status_externo`,
+    `cuerpo` y `reintentar_en` (segundos del header Retry-After, si vino) quedan disponibles para el adaptador."""
 
-    def __init__(self, modulo: str, detalle: dict | None = None):
+    def __init__(self, modulo: str, detalle: dict | None = None, status_externo: int | None = None,
+                 cuerpo=None, reintentar_en: int | None = None):
         super().__init__(modulo, 503, "MODULO_NO_DISPONIBLE",
                          "El servicio externo no está disponible. Intentá de nuevo en unos minutos.", detalle)
+        self.status_externo = status_externo
+        self.cuerpo = cuerpo
+        self.reintentar_en = reintentar_en
 
 
 class AdaptadorNoAutorizado(AdaptadorError):

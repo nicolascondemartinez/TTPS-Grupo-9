@@ -55,7 +55,12 @@ class HttpClient:
             raise AdaptadorNoAutorizado(self.modulo, status_externo=status, cuerpo=_cuerpo(response))
         if status == 429 or status >= 500:
             logger.warning("[%s] %s en %s %s", self.modulo, status, method, url)
-            raise AdaptadorNoDisponible(self.modulo, {"status_externo": status})
+            reintentar_en = _segundos(response.headers.get("Retry-After"))
+            detalle = {"status_externo": status}
+            if reintentar_en is not None:
+                detalle["reintentar_en"] = reintentar_en
+            raise AdaptadorNoDisponible(self.modulo, detalle, status_externo=status, cuerpo=_cuerpo(response),
+                                        reintentar_en=reintentar_en)
         if status >= 400:
             raise SolicitudRechazada(self.modulo, status, _cuerpo(response))
 
@@ -66,6 +71,11 @@ class HttpClient:
         except ValueError:
             logger.warning("[%s] respuesta no JSON en %s %s", self.modulo, method, url)
             raise RespuestaInvalida(self.modulo, {"motivo": "no_es_json"})
+
+
+def _segundos(retry_after: str | None) -> int | None:
+    """Retry-After en segundos; la forma con fecha HTTP no la usa ningún módulo y se ignora."""
+    return int(retry_after) if retry_after and retry_after.strip().isdigit() else None
 
 
 def _cuerpo(response: requests.Response):
