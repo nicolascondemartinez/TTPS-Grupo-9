@@ -73,10 +73,11 @@ def test_5xx_y_429_no_disponible(status):
 
 
 @pytest.mark.parametrize("status", [401, 403])
-def test_401_403_no_autorizado(status):
-    http, _ = cliente(status=status)
-    with pytest.raises(AdaptadorNoAutorizado):
+def test_401_403_no_autorizado_conserva_status_y_cuerpo(status):
+    http, _ = cliente(status=status, contenido=b'{"message": "no"}')
+    with pytest.raises(AdaptadorNoAutorizado) as e:
         http.get("/x")
+    assert e.value.status_externo == status and e.value.cuerpo == {"message": "no"}
 
 
 def test_otro_4xx_trae_status_y_cuerpo():

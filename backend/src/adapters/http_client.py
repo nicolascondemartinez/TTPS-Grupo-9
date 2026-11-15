@@ -52,7 +52,7 @@ class HttpClient:
         status = response.status_code
         if status in (401, 403):
             logger.error("[%s] %s en %s %s: revisar la API key", self.modulo, status, method, url)
-            raise AdaptadorNoAutorizado(self.modulo)
+            raise AdaptadorNoAutorizado(self.modulo, status_externo=status, cuerpo=_cuerpo(response))
         if status == 429 or status >= 500:
             logger.warning("[%s] %s en %s %s", self.modulo, status, method, url)
             raise AdaptadorNoDisponible(self.modulo, {"status_externo": status})

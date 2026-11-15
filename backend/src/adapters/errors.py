@@ -22,11 +22,14 @@ class AdaptadorNoDisponible(AdaptadorError):
 
 
 class AdaptadorNoAutorizado(AdaptadorError):
-    """El módulo externo rechazó nuestra API key (401/403)."""
+    """El módulo externo rechazó nuestra API key (401/403). `status_externo` y `cuerpo` sirven para los
+    módulos que usan el 403 como regla de negocio."""
 
-    def __init__(self, modulo: str, detalle: dict | None = None):
+    def __init__(self, modulo: str, detalle: dict | None = None, status_externo: int | None = None, cuerpo=None):
         super().__init__(modulo, 502, "MODULO_NO_AUTORIZADO",
                          "No pudimos autenticarnos con el servicio externo.", detalle)
+        self.status_externo = status_externo
+        self.cuerpo = cuerpo
 
 
 class RespuestaInvalida(AdaptadorError):
