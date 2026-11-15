@@ -47,6 +47,15 @@ def test_header_de_api_key_configurable(monkeypatch):
     assert "X-API-Key" not in adaptador.http.session.headers
 
 
+def test_timeout_por_defecto_del_modulo_y_la_variable_lo_pisa(monkeypatch):
+    monkeypatch.setenv("PRUEBA_MODE", "real")
+    monkeypatch.setenv("PRUEBA_API_URL", "https://api.example.test")
+    assert crear_adaptador("PRUEBA", mock=Mock, real=Real, timeout=15).http.timeout == 15
+
+    monkeypatch.setenv("PRUEBA_TIMEOUT", "4")
+    assert crear_adaptador("PRUEBA", mock=Mock, real=Real, timeout=15).http.timeout == 4
+
+
 def test_modo_del_modulo_tiene_prioridad_sobre_el_global(monkeypatch):
     monkeypatch.setenv("ADAPTERS_MODE", "real")
     monkeypatch.setenv("PRUEBA_MODE", "mock")

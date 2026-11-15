@@ -28,12 +28,12 @@ class ConfigAdaptador:
     timeout: float
 
 
-def leer_config(modulo: str) -> ConfigAdaptador:
+def leer_config(modulo: str, timeout_por_defecto: float = TIMEOUT_POR_DEFECTO) -> ConfigAdaptador:
     prefijo = modulo.upper()
     modo = (os.environ.get(f"{prefijo}_MODE") or os.environ.get("ADAPTERS_MODE") or "mock").strip().lower()
     if modo not in MODOS:
         raise RuntimeError(f"{prefijo}_MODE inválido: {modo!r} (mock | real)")
-    timeout = os.environ.get(f"{prefijo}_TIMEOUT") or TIMEOUT_POR_DEFECTO
+    timeout = os.environ.get(f"{prefijo}_TIMEOUT") or timeout_por_defecto
     return ConfigAdaptador(
         modulo=prefijo,
         modo=modo,
@@ -44,9 +44,10 @@ def leer_config(modulo: str) -> ConfigAdaptador:
 
 
 def crear_adaptador(modulo: str, mock: Callable[[], T], real: Callable[[HttpClient], T],
-                    header_api_key: str = "X-API-Key") -> T:
-    """`mock` se llama sin argumentos; `real` recibe un HttpClient ya configurado para el módulo."""
-    config = leer_config(modulo)
+                    header_api_key: str = "X-API-Key", timeout: float = TIMEOUT_POR_DEFECTO) -> T:
+    """`mock` se llama sin argumentos; `real` recibe un HttpClient ya configurado para el módulo.
+    `timeout` es el valor por defecto del módulo; MODULO_TIMEOUT lo pisa."""
+    config = leer_config(modulo, timeout)
     if config.modo == "mock":
         return mock()
     if not config.url:

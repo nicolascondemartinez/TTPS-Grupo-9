@@ -10,7 +10,7 @@ y **real** (llama a la API). Cuál se usa se elige con variables de entorno, sin
 | `MODULO_MODE`     | `mock` o `real`. Vacía: usa `ADAPTERS_MODE` (y si no, `mock`) |
 | `MODULO_API_URL`  | URL base de la API real (obligatoria en modo `real`)    |
 | `MODULO_API_KEY`  | Se manda en el header `X-API-Key` (configurable por módulo) |
-| `MODULO_TIMEOUT`  | Segundos, opcional (10 por defecto)                     |
+| `MODULO_TIMEOUT`  | Segundos, opcional (10, o lo que el módulo pase en `crear_adaptador(..., timeout=)`) |
 
 `MODULO` es el nombre del módulo en mayúsculas: `OBRAS_SOCIALES_MODE`, `OBRAS_SOCIALES_API_URL`, ...
 Al agregar un módulo, sumar sus variables vacías a `backend/.env.example`.
