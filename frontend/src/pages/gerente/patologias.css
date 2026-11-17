@@ -1,0 +1,12 @@
+/* Patologías (gerente médico): listado y formulario de alta/modificación. */
+.patologias__secundarios { display: inline-block; min-width: 220px; color: var(--texto-suave); }
+.patologias__error { margin: 0; font-size: 14px; color: #9f1239; }
+
+.patologia-form { display: flex; flex-direction: column; gap: 20px; max-width: 680px; }
+.patologia-form__acciones { display: flex; justify-content: flex-end; gap: 12px; }
+.patologia-form__aviso { display: flex; flex-direction: column; gap: 12px; }
+
+@media (max-width: 820px) {
+  .patologia-form__acciones { flex-direction: column-reverse; }
+  .patologia-form__acciones .btn { width: 100%; min-height: 44px; }
+}

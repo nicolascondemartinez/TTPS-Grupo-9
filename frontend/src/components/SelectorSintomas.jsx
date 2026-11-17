@@ -10,7 +10,10 @@ import Icono from './Icono.jsx'
 //   const [sintomas, setSintomas] = useState([])
 //   <SelectorSintomas etiqueta="Síntomas del paciente" valor={sintomas} onChange={setSintomas} />
 //
-// `buscar` (opcional) reemplaza la consulta a la API: (texto) => Promise<[{ snomed_code, termino }]>
+// Opcionales:
+//   maximo   tope de síntomas (ej. el cardinal de una patología: maximo={1})
+//   excluir  síntomas que no se ofrecen aunque coincidan (ej. el cardinal en la lista de secundarios)
+//   buscar   reemplaza la consulta a la API: (texto) => Promise<[{ snomed_code, termino }]>
 const MINIMO_LETRAS = 3
 const ESPERA_MS = 300
 const MENSAJE_ERROR = 'No pudimos consultar los síntomas. Intentá de nuevo en unos minutos.'
@@ -24,6 +27,8 @@ export default function SelectorSintomas({
   ayuda,
   error,
   disabled = false,
+  maximo,
+  excluir = [],
   buscar = buscarEnApi,
 }) {
   const id = useId()
@@ -42,7 +47,9 @@ export default function SelectorSintomas({
 
   const buscable = texto.trim()
   const elegidos = new Set(valor.map((s) => s.snomed_code))
-  const opciones = resultados.filter((s) => !elegidos.has(s.snomed_code))
+  const excluidos = new Set(excluir.map((s) => s.snomed_code))
+  const opciones = resultados.filter((s) => !elegidos.has(s.snomed_code) && !excluidos.has(s.snomed_code))
+  const completo = maximo != null && valor.length >= maximo
 
   // Debounce: consulta cuando se deja de escribir; una respuesta vieja no pisa a una nueva.
   useEffect(() => {
@@ -76,7 +83,7 @@ export default function SelectorSintomas({
   }, [buscable])
 
   function elegir(sintoma) {
-    if (!elegidos.has(sintoma.snomed_code)) {
+    if (!elegidos.has(sintoma.snomed_code) && !completo) {
       onChange?.([...valor, { snomed_code: sintoma.snomed_code, termino: sintoma.termino }])
     }
     setTexto('')
@@ -87,7 +94,7 @@ export default function SelectorSintomas({
 
   function quitar(sintoma) {
     onChange?.(valor.filter((s) => s.snomed_code !== sintoma.snomed_code))
-    inputRef.current?.focus()
+    setTimeout(() => inputRef.current?.focus()) // después del render: con `maximo` el campo recién se habilita
   }
 
   function alPresionarTecla(e) {
@@ -114,9 +121,10 @@ export default function SelectorSintomas({
     setActivo(-1)
   }
 
-  const mostrarPanel = abierto && buscable.length >= MINIMO_LETRAS && estado !== 'error'
+  const mostrarPanel = abierto && !completo && buscable.length >= MINIMO_LETRAS && estado !== 'error'
   let aviso = ayuda
   if (buscable.length > 0 && buscable.length < MINIMO_LETRAS) aviso = `Escribí al menos ${MINIMO_LETRAS} letras para buscar`
+  if (completo && !disabled) aviso = maximo === 1 ? 'Para cambiarlo, quitá el síntoma elegido.' : `Llegaste al máximo de ${maximo} síntomas.`
 
   return (
     <div className="campo-grupo selector-sintomas">
@@ -154,9 +162,9 @@ export default function SelectorSintomas({
           aria-activedescendant={mostrarPanel && opciones[activo] ? `${listaId}-${activo}` : undefined}
           aria-invalid={error || errorApi ? true : undefined}
           aria-describedby={avisoId}
-          placeholder="Escribí un síntoma (ej. hepatomegalia)"
+          placeholder={completo ? 'Síntoma elegido' : 'Escribí un síntoma (ej. hepatomegalia)'}
           value={texto}
-          disabled={disabled}
+          disabled={disabled || completo}
           onChange={(e) => { setTexto(e.target.value); setAbierto(true) }}
           onFocus={() => setAbierto(true)}
           onBlur={alSalir}
@@ -168,7 +176,7 @@ export default function SelectorSintomas({
             {estado === 'buscando' && <p className="selector-sintomas__mensaje">Buscando…</p>}
             {estado === 'listo' && opciones.length === 0 && (
               <p className="selector-sintomas__mensaje">
-                {resultados.length > 0 ? 'Ya elegiste todos los resultados de esta búsqueda' : 'No encontramos síntomas con ese texto'}
+                {resultados.length > 0 ? 'Los resultados de esta búsqueda ya están elegidos' : 'No encontramos síntomas con ese texto'}
               </p>
             )}
             {estado === 'listo' && opciones.length > 0 && (
