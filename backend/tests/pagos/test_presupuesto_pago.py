@@ -212,3 +212,27 @@ def test_el_administrativo_no_puede_pagar(api, admin, crear_estudio):
     emitir(api, admin, estudio)
     r = pagar(api, admin, estudio)
     assert r.status_code == 403
+
+
+
+# ---------- Estudios del paciente (pantalla "Presupuesto y pago") ----------
+
+def test_el_paciente_ve_sus_estudios_con_su_presupuesto(api, admin, crear_estudio):
+    estudio = crear_estudio(genes=6)
+    crear_estudio(correo=OTRO_PACIENTE, dni="30999888")  # no tiene que aparecer
+    token = api.token(correo=PACIENTE)
+
+    [item] = api.get("/api/presupuestos/mios", token).get_json()["estudios"]
+    assert item["estudio_id"] == str(estudio.id)
+    assert item["estado"] == "creado"
+    assert item["presupuesto"] is None
+
+    emitir(api, admin, estudio)
+    [item] = api.get("/api/presupuestos/mios", token).get_json()["estudios"]
+    assert item["presupuesto"]["monto_total"] == "530.00"
+
+
+def test_mios_es_solo_para_pacientes(api, admin):
+    r = api.get("/api/presupuestos/mios", admin)
+    assert r.status_code == 403
+    assert codigo_error(r) == "SOLO_PACIENTES"
