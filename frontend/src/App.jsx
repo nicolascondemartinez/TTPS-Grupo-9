@@ -4,6 +4,8 @@ import Design from './design/Design.jsx'
 import AppLayout from './layout/AppLayout.jsx'
 import { MENU } from './constants/roles.js'
 import CambioContrasena from './pages/acceso/CambioContrasena.jsx'
+import FormularioPatologia from './pages/gerente/FormularioPatologia.jsx'
+import Patologias from './pages/gerente/Patologias.jsx'
 import Ingreso from './pages/acceso/Ingreso.jsx'
 import VerificarCodigo from './pages/acceso/VerificarCodigo.jsx'
 import RutaProtegida from './sesion/RutaProtegida.jsx'
@@ -32,6 +34,9 @@ export default function App() {
         <Route element={<AppLayout />}>
           <Route index element={<Inicio />} />
           {/* Pantallas reales: van acá, antes de las rutas provisorias */}
+          <Route path="/gerente/patologias" element={<Patologias />} />
+          <Route path="/gerente/patologias/nueva" element={<FormularioPatologia />} />
+          <Route path="/gerente/patologias/:id" element={<FormularioPatologia />} />
 
           {rutasDelMenu.map((ruta) => <Route key={ruta} path={ruta} element={<EnConstruccion />} />)}
           <Route path="*" element={<EnConstruccion titulo="Página no encontrada" />} />
