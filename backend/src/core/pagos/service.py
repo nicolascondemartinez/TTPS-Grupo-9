@@ -7,20 +7,20 @@ Reglas (de la entrevista con el cliente):
 - Sin pago no hay turno: al pagar, el estudio pasa de Creado a Pagado.
 - Cada pago queda en el registro financiero (MovimientoFinanciero) para el tablero futuro.
 """
-import logging
+
 from decimal import Decimal
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from src.core.avisos.mail_service import MailSender
+from src.core.avisos.service import notificar
 from src.core.common.errors import ApiError
 from src.core.common.validation import validar_uuid
 from src.core.enums import ConceptoPago, EstadoEstudio, OrigenPago, RolUsuario, TipoAviso
 from src.core.estudios.service import cambiar_estado_estudio
-from src.core.models import Aviso, Estudio, MovimientoFinanciero, Presupuesto, Usuario
+from src.core.models import Estudio, MovimientoFinanciero, Presupuesto, Usuario
 
-logger = logging.getLogger(__name__)
 
 PRECIO_BASE = Decimal("500.00")
 GENES_INCLUIDOS = 5
@@ -107,10 +107,10 @@ def emitir_presupuesto(session: Session, estudio_id: str, administrativo: Usuari
     )
     session.add(presupuesto)
     paciente = estudio.paciente.usuario
-    titulo, mensaje = "Tu presupuesto está disponible", f"El presupuesto de tu estudio es de USD {presupuesto.monto_total}."
-    _crear_aviso(session, paciente, TipoAviso.presupuesto_emitido, titulo, mensaje, estudio)
+    notificar(session, paciente, TipoAviso.presupuesto_emitido, "Tu presupuesto está disponible",
+    f"El presupuesto de tu estudio es de USD {presupuesto.monto_total}.", estudio_id=estudio.id, mail=mail)
     session.commit()
-    _enviar_mail(mail, paciente, titulo, mensaje)
+
     return presupuesto
 
 
@@ -139,23 +139,8 @@ def pagar_particular(session: Session, estudio_id: str, paciente: Usuario, mail:
     )
     session.add(movimiento)
     cambiar_estado_estudio(session, estudio, EstadoEstudio.pagado, paciente.id)
-    titulo, mensaje = "Pago registrado", "Ya podés sacar el turno para la extracción de sangre."
-    _crear_aviso(session, paciente, TipoAviso.puede_sacar_turno, titulo, mensaje, estudio)
+    notificar(session, paciente, TipoAviso.puede_sacar_turno, "Pago registrado",
+    "Ya podés sacar el turno para la extracción de sangre.", estudio_id=estudio.id, mail=mail)
     session.commit()
-    _enviar_mail(mail, paciente, titulo, mensaje)
+
     return movimiento, estudio
-
-
-# --- Avisos ---
-
-def _crear_aviso(session: Session, usuario: Usuario, tipo: TipoAviso, titulo: str, mensaje: str, estudio: Estudio) -> None:
-    """Aviso dentro del sistema. Se guarda en la misma transacción que el cambio que lo origina."""
-    session.add(Aviso(usuario_id=usuario.id, tipo=tipo, titulo=titulo, mensaje=mensaje, estudio_id=estudio.id))
-
-
-def _enviar_mail(mail: MailSender, usuario: Usuario, titulo: str, mensaje: str) -> None:
-    """Se manda después del commit: si el mail falla, el pago o el presupuesto ya quedaron guardados."""
-    try:
-        mail.send(usuario.email, titulo, mensaje)
-    except Exception:
-        logger.exception("No se pudo enviar el mail '%s' a %s", titulo, usuario.email)
