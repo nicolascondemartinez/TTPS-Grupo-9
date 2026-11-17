@@ -1,5 +1,5 @@
 """Centros de extracción y turnos: el paciente ve los centros, elige un horario libre, reserva y cancela."""
-from flask import Blueprint, g, request
+from flask import Blueprint, Response, g, request
 
 from src.core.database import get_db
 from src.core.turnos import service as turnos_service
@@ -42,3 +42,20 @@ def ver(estudio_id):
 @require_permission("turno_cancelar")
 def cancelar(turno_id):
     return turno_view(*turnos_service.cancelar_turno(get_db(), turno_id, g.usuario))
+
+@bp.get("/turnos/<turno_id>/orden.pdf")
+@require_permission("turno_ver")
+def orden(turno_id):
+    return _pdf(*turnos_service.documento_del_turno(get_db(), turno_id, g.usuario, "orden"))
+
+
+@bp.get("/turnos/<turno_id>/consentimiento.pdf")
+@require_permission("turno_ver")
+def consentimiento(turno_id):
+    return _pdf(*turnos_service.documento_del_turno(get_db(), turno_id, g.usuario, "consentimiento"))
+
+#funcion auxiliar que usan las 2 rutas de arriba
+def _pdf(contenido: bytes, nombre: str) -> Response:
+    """Respuesta con el PDF para descargar."""
+    return Response(contenido, mimetype="application/pdf",
+                    headers={"Content-Disposition": f'attachment; filename="{nombre}"'})
