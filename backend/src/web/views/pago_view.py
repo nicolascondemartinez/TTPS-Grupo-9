@@ -45,3 +45,19 @@ def pendientes_de_presupuesto_view(pendientes, precio) -> dict:
             for estudio, genes in pendientes
         ]
     }
+
+
+
+def estudios_del_paciente_view(estudios) -> dict:
+    """estudios: [(estudio, presupuesto o None)]."""
+    return {
+        "estudios": [
+            {
+                "estudio_id": str(estudio.id),
+                "estado": estudio.estado.value,
+                "creado_at": estudio.created_at.isoformat(),
+                "presupuesto": presupuesto_view(presupuesto) if presupuesto else None,
+            }
+            for estudio, presupuesto in estudios
+        ]
+    }

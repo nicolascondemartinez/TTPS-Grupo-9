@@ -78,6 +78,19 @@ def listar_pendientes_de_presupuesto(session: Session) -> list[tuple[Estudio, in
     )
     return [(e, cantidad_de_genes(e)) for e in session.scalars(consulta)]
 
+def listar_estudios_del_paciente(session: Session, paciente: Usuario) -> list[tuple[Estudio, Presupuesto | None]]:
+    """Estudios del paciente (el más nuevo primero), cada uno con su presupuesto si ya se emitió."""
+    if paciente.rol != RolUsuario.paciente:
+        raise ApiError(403, "SOLO_PACIENTES", "Esta consulta es solo para pacientes")
+    consulta = (
+        select(Estudio, Presupuesto)
+        .outerjoin(Presupuesto, Presupuesto.estudio_id == Estudio.id)
+        .where(Estudio.paciente_id == paciente.id)
+        .order_by(Estudio.created_at.desc())
+    )
+    return [(estudio, presupuesto) for estudio, presupuesto in session.execute(consulta)]
+
+
 
 def emitir_presupuesto(session: Session, estudio_id: str, administrativo: Usuario, mail: MailSender) -> Presupuesto:
     estudio = obtener_estudio(session, estudio_id, administrativo, bloquear=True)
