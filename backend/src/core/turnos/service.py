@@ -16,9 +16,10 @@ from src.core.common.errors import ApiError
 from src.core.common.validation import validar_uuid
 from src.core.enums import EstadoEstudio, EstadoTurno
 from src.core.estudios.service import cambiar_estado_estudio
-from src.core.models import CentroExtraccion, Estudio, Provincia, Turno, Usuario
+from src.core.models import CentroExtraccion, Estudio, Provincia, Turno, Usuario, Paciente
 from src.core.pagos.service import obtener_estudio
 from src.core.turnos.calendario import ZONA_ARGENTINA, es_franja_valida, feriados_entre, franjas_del_dia
+from src.core.turnos.documentos import DatosTurno, generar_consentimiento, generar_orden
 
 DIAS_DE_VENTANA = 30  # hasta cuántos días para adelante se pueden sacar turnos
 MAXIMO_INASISTENCIAS = 5  # a la quinta inasistencia se pierde el pago (etapa 6)
@@ -150,3 +151,26 @@ def cancelar_turno(session: Session, turno_id: str, paciente: Usuario,
     cambiar_estado_estudio(session, estudio, EstadoEstudio.pagado, paciente.id)
     session.commit()
     return turno, session.get(CentroExtraccion, turno.centro_id), estudio
+
+
+# --- Documentos (orden de extracción y consentimiento) ---
+
+def documento_del_turno(session: Session, turno_id: str, usuario: Usuario, tipo: str) -> tuple[bytes, str]:
+    """PDF del turno reservado: tipo "orden" o "consentimiento". Devuelve el contenido y el nombre del archivo."""
+    turno = session.get(Turno, turno_id) if validar_uuid(turno_id) else None
+    if turno is None:
+        raise ApiError(404, "TURNO_NO_ENCONTRADO", "El turno no existe")
+    estudio = obtener_estudio(session, str(turno.estudio_id), usuario)  # si no es su estudio, 404
+    if turno.estado != EstadoTurno.reservado:
+        raise ApiError(409, "TURNO_NO_VIGENTE", "Solo se descargan los documentos de un turno reservado")
+
+    paciente = session.get(Paciente, estudio.paciente_id)
+    centro = session.get(CentroExtraccion, turno.centro_id)
+    datos = DatosTurno(
+        paciente=f"{paciente.usuario.apellido}, {paciente.usuario.nombre}", dni=paciente.dni,
+        fecha_nacimiento=paciente.fecha_nacimiento, estudio_id=str(estudio.id), fecha_hora=turno.fecha_hora,
+        centro=centro.nombre, direccion=centro.direccion,
+    )
+    if tipo == "orden":
+        return generar_orden(datos), "orden-de-extraccion.pdf"
+    return generar_consentimiento(datos), "consentimiento-informado.pdf"
