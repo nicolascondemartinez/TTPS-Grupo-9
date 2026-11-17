@@ -10,6 +10,7 @@ import Ingreso from './pages/acceso/Ingreso.jsx'
 import VerificarCodigo from './pages/acceso/VerificarCodigo.jsx'
 import RutaProtegida from './sesion/RutaProtegida.jsx'
 import { useSesion } from './sesion/SesionContext.jsx'
+import OrdenDelDia from './pages/transportista/OrdenDelDia.jsx'
 
 // Lleva a cada usuario a la primera pantalla de su rol (solo se renderiza con sesión: lo garantiza RutaProtegida).
 function Inicio() {
@@ -33,6 +34,7 @@ export default function App() {
       <Route element={<RutaProtegida />}>
         <Route element={<AppLayout />}>
           <Route index element={<Inicio />} />
+          <Route path="/transportista/orden-del-dia" element={<OrdenDelDia />} />
           {/* Pantallas reales: van acá, antes de las rutas provisorias */}
           <Route path="/gerente/patologias" element={<Patologias />} />
           <Route path="/gerente/patologias/nueva" element={<FormularioPatologia />} />
