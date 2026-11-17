@@ -89,3 +89,12 @@ def enviar_codigo_verificacion(sender: MailSender, destino: str, codigo: str, mi
         f"Es válido por {minutos} minutos. Si no intentaste ingresar, ignorá este mensaje "
         "y cambiá tu contraseña.",
     )
+
+
+def enviar_credenciales(sender: MailSender, destino: str, usuario: str, contrasena_temporal: str) -> None:
+    sender.send(
+        destino,
+        "Tu acceso al sistema de exoma clínico",
+        f"Usuario: {usuario}\nContraseña temporal: {contrasena_temporal}\n\n"
+        "Al ingresar por primera vez vas a tener que definir una contraseña nueva.",
+    )
