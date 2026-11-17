@@ -18,6 +18,7 @@ import Tabla from '../components/Tabla.jsx'
 import Tarjeta from '../components/Tarjeta.jsx'
 import { ESTADOS_ESTUDIO } from '../constants/estados.js'
 import Mapa from '../components/Mapa.jsx'
+import SelectorSintomas from '../components/SelectorSintomas.jsx'
 
 // Catálogo de la base de frontend: muestra cada componente y cómo usarlo.
 // Datos de ejemplo solamente.
@@ -62,6 +63,7 @@ export default function Design() {
   const [modalAbierto, setModalAbierto] = useState(false)
   const notificar = useNotificar()
   const [centroElegido, setCentroElegido] = useState('c2')
+  const [sintomas, setSintomas] = useState([])
 
   useEffect(() => {
     api.get('/health').then((d) => setApiEstado(d.status)).catch(() => setApiEstado('sin conexión'))
@@ -187,6 +189,17 @@ export default function Design() {
           recorrido={CENTROS_EJEMPLO}
           transportista={TRANSPORTISTA_EJEMPLO}
         />
+      </Seccion>
+
+      <Seccion
+        etiqueta="10"
+        titulo="Selector de síntomas (SNOMED)"
+        codigo={`const [sintomas, setSintomas] = useState([])   // [{ snomed_code, termino }]\n<SelectorSintomas etiqueta="Síntomas del paciente" valor={sintomas} onChange={setSintomas} />\n// Busca desde 3 letras en GET /api/sintomas (permiso sintoma_buscar: médico y gerente médico).\n// Acá, sin haber ingresado con uno de esos roles, se ve el mensaje de error de la API.`}
+      >
+        <div style={{ maxWidth: 520 }}>
+          <SelectorSintomas etiqueta="Síntomas del paciente" valor={sintomas} onChange={setSintomas} />
+        </div>
+        <p className="tarjeta__subtitulo">Valor: {sintomas.length ? sintomas.map((s) => `${s.snomed_code} ${s.termino}`).join(' · ') : 'ninguno'}</p>
       </Seccion>
     </div>
   )

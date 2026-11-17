@@ -3,11 +3,12 @@
 Para agregar uno: crear src/web/controllers/<area>.py con `bp = Blueprint("<area>", __name__)`
 y sumarlo a CONTROLLERS. Todas las rutas quedan bajo /api.
 """
-from src.web.controllers import auth, health
+from src.web.controllers import auth, health, sintomas
 
 CONTROLLERS = [
     health,
     auth,
+    sintomas,
 ]
 
 
