@@ -8,6 +8,7 @@ import FormularioPatologia from './pages/gerente/FormularioPatologia.jsx'
 import Patologias from './pages/gerente/Patologias.jsx'
 import Ingreso from './pages/acceso/Ingreso.jsx'
 import Presupuestos from './pages/administrativo/Presupuestos.jsx'
+import Turno from './pages/paciente/Turno.jsx'
 import PresupuestoPago from './pages/paciente/PresupuestoPago.jsx'
 import VerificarCodigo from './pages/acceso/VerificarCodigo.jsx'
 import RutaProtegida from './sesion/RutaProtegida.jsx'
@@ -41,6 +42,7 @@ export default function App() {
           <Route path="/avisos" element={<Avisos />} />
           <Route path="/gerente/patologias" element={<Patologias />} />
           <Route path="/paciente/pagos" element={<PresupuestoPago />} />
+          <Route path="/paciente/turno" element={<Turno />} />
           <Route path="/administrativo/presupuestos" element={<Presupuestos />} />
           <Route path="/gerente/patologias/nueva" element={<FormularioPatologia />} />
           <Route path="/gerente/patologias/:id" element={<FormularioPatologia />} />
