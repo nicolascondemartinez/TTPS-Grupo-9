@@ -72,6 +72,7 @@ PERMISOS_POR_ROL: dict[RolUsuario, list[str]] = {
         "lote_programar_retiro",
         "movimiento_listar",
         "obra_social_listar",
+        "orden_dia_generar",
         "presupuesto_emitir",
         "presupuesto_ver",
         "remuestreo_notificar",
