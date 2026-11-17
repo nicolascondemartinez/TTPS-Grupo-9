@@ -7,6 +7,8 @@ import CambioContrasena from './pages/acceso/CambioContrasena.jsx'
 import FormularioPatologia from './pages/gerente/FormularioPatologia.jsx'
 import Patologias from './pages/gerente/Patologias.jsx'
 import Ingreso from './pages/acceso/Ingreso.jsx'
+import Presupuestos from './pages/administrativo/Presupuestos.jsx'
+import PresupuestoPago from './pages/paciente/PresupuestoPago.jsx'
 import VerificarCodigo from './pages/acceso/VerificarCodigo.jsx'
 import RutaProtegida from './sesion/RutaProtegida.jsx'
 import { useSesion } from './sesion/SesionContext.jsx'
@@ -38,6 +40,8 @@ export default function App() {
           {/* Pantallas reales: van acá, antes de las rutas provisorias */}
           <Route path="/avisos" element={<Avisos />} />
           <Route path="/gerente/patologias" element={<Patologias />} />
+          <Route path="/paciente/pagos" element={<PresupuestoPago />} />
+          <Route path="/administrativo/presupuestos" element={<Presupuestos />} />
           <Route path="/gerente/patologias/nueva" element={<FormularioPatologia />} />
           <Route path="/gerente/patologias/:id" element={<FormularioPatologia />} />
 

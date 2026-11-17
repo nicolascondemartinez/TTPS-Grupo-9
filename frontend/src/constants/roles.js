@@ -33,6 +33,7 @@ export const MENU = {
   ],
   administrativo: [
     { texto: 'Estudios', ruta: '/administrativo/estudios', icono: 'lista' },
+    { texto: 'Presupuestos', ruta: '/administrativo/presupuestos', icono: 'documento' },
     { texto: 'Obras sociales', ruta: '/administrativo/obras-sociales', icono: 'escudo' },
     { texto: 'Turnos', ruta: '/administrativo/turnos', icono: 'calendario' },
     { texto: 'Lotes', ruta: '/administrativo/lotes', icono: 'caja' },
