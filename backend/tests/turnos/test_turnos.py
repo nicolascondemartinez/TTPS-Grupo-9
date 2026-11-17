@@ -236,3 +236,37 @@ def test_un_paciente_no_cancela_el_turno_de_otro(api, centro, crear_estudio):
     turno_id = reservar(api, api.token(correo=PACIENTE), estudio, centro, a_las(DIA, 10)).get_json()["id"]
     r = post(api, f"/api/turnos/{turno_id}/cancelar", api.token(correo=OTRO_PACIENTE))
     assert r.status_code == 404
+
+
+
+# ---------- Documentos del turno ----------
+
+def test_el_paciente_descarga_la_orden_y_el_consentimiento(api, centro, crear_estudio):
+    estudio = crear_estudio()
+    token = api.token(correo=PACIENTE)
+    turno_id = reservar(api, token, estudio, centro, a_las(DIA, 10)).get_json()["id"]
+
+    for documento in ("orden", "consentimiento"):
+        r = api.get(f"/api/turnos/{turno_id}/{documento}.pdf", token)
+        assert r.status_code == 200
+        assert r.mimetype == "application/pdf"
+        assert r.data.startswith(b"%PDF")
+        assert "attachment" in r.headers["Content-Disposition"]
+
+
+def test_otro_paciente_no_descarga_los_documentos(api, centro, crear_estudio):
+    estudio = crear_estudio()
+    crear_estudio(correo=OTRO_PACIENTE, dni="30999888")
+    turno_id = reservar(api, api.token(correo=PACIENTE), estudio, centro, a_las(DIA, 10)).get_json()["id"]
+    r = api.get(f"/api/turnos/{turno_id}/orden.pdf", api.token(correo=OTRO_PACIENTE))
+    assert r.status_code == 404
+
+def test_un_turno_cancelado_no_tiene_documentos(api, centro, crear_estudio):
+    estudio = crear_estudio()
+    token = api.token(correo=PACIENTE)
+    turno_id = reservar(api, token, estudio, centro, a_las(DIA, 10)).get_json()["id"]
+    post(api, f"/api/turnos/{turno_id}/cancelar", token)
+    r = api.get(f"/api/turnos/{turno_id}/orden.pdf", token)
+    assert r.status_code == 409
+    assert codigo_error(r) == "TURNO_NO_VIGENTE"
+
