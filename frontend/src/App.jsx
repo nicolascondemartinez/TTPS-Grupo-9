@@ -10,6 +10,8 @@ import Ingreso from './pages/acceso/Ingreso.jsx'
 import VerificarCodigo from './pages/acceso/VerificarCodigo.jsx'
 import RutaProtegida from './sesion/RutaProtegida.jsx'
 import { useSesion } from './sesion/SesionContext.jsx'
+import { AvisosProvider } from './avisos/AvisosContext.jsx'
+import Avisos from './pages/avisos/Avisos.jsx'
 
 // Lleva a cada usuario a la primera pantalla de su rol (solo se renderiza con sesión: lo garantiza RutaProtegida).
 function Inicio() {
@@ -31,9 +33,10 @@ export default function App() {
       <Route path="/acceso/cambiar-contrasena" element={<CambioContrasena />} />
 
       <Route element={<RutaProtegida />}>
-        <Route element={<AppLayout />}>
+        <Route element={<AvisosProvider><AppLayout /></AvisosProvider>}>
           <Route index element={<Inicio />} />
           {/* Pantallas reales: van acá, antes de las rutas provisorias */}
+          <Route path="/avisos" element={<Avisos />} />
           <Route path="/gerente/patologias" element={<Patologias />} />
           <Route path="/gerente/patologias/nueva" element={<FormularioPatologia />} />
           <Route path="/gerente/patologias/:id" element={<FormularioPatologia />} />
