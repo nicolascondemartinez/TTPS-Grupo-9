@@ -4,7 +4,12 @@ from flask import Blueprint, request
 from src.web.security import require_permission
 from src.core.database import get_db
 from src.core.clinico import service as clinico_service
-from src.core.clinico.validation import validar_alta_patologia, validar_modificacion_patologia
+from src.core.clinico.validation import (
+    validar_alta_patologia,
+    validar_modificacion_patologia,
+    validar_pedido_diagnostico,
+)
+from src.web.views.diagnostico_view import validacion_diagnostico_view
 from src.web.views.patologia_view import patologia_view, patologias_view
 
 bp = Blueprint("patologias", __name__)
@@ -27,6 +32,14 @@ def ver(patologia_id):
 def crear():
     nombre, cardinal, secundarios = validar_alta_patologia(request.get_json(silent=True))
     return patologia_view(clinico_service.crear_patologia(get_db(), nombre, cardinal, secundarios)), 201
+
+
+@bp.post("/patologias/validar-diagnostico")
+@require_permission("patologia_listar")
+def validar_diagnostico():
+    """Para que el formulario del médico muestre el motivo antes de guardar (el alta vuelve a validar)."""
+    patologia_ids, codigos = validar_pedido_diagnostico(request.get_json(silent=True))
+    return validacion_diagnostico_view(clinico_service.validar_diagnostico_presuntivo(get_db(), patologia_ids, codigos))
 
 
 @bp.put("/patologias/<patologia_id>")

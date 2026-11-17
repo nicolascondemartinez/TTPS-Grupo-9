@@ -4,6 +4,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
 
 from src.adapters.snomed import SintomaSnomed, get_snomed
+from src.core.clinico.diagnostico import ResultadoDiagnostico, validar_diagnosticos
 from src.core.common.errors import ApiError
 from src.core.common.validation import validar_uuid
 from src.core.models import Patologia, PatologiaSintoma, Sintoma
@@ -65,6 +66,13 @@ def crear_patologia(session: Session, nombre: str, cardinal: dict, secundarios: 
     asignar_sintomas(session, patologia, cardinal, secundarios)
     session.commit()
     return obtener_patologia(session, str(patologia.id))
+
+
+def validar_diagnostico_presuntivo(session: Session, patologia_ids: list[str], codigos_del_paciente: list[str]
+                                   ) -> list[ResultadoDiagnostico]:
+    """Un resultado por patología sospechada. 404 si alguna no existe."""
+    patologias = [obtener_patologia(session, patologia_id) for patologia_id in patologia_ids]
+    return validar_diagnosticos(patologias, codigos_del_paciente)
 
 
 def modificar_patologia(session: Session, patologia_id: str, cardinal: dict, secundarios: list[dict]) -> Patologia:

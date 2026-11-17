@@ -3,6 +3,7 @@ cada campo (mismo formato que la validación de autenticación)."""
 import re
 
 from src.core.common.errors import validation_error
+from src.core.common.validation import validar_uuid
 
 NOMBRE_MAX = 100
 TERMINO_MAX = 255
@@ -73,6 +74,29 @@ def validar_alta_patologia(datos) -> tuple[str, dict, list[dict]]:
     if problemas:
         raise validation_error(problemas)
     return nombre, cardinal, secundarios
+
+
+def validar_pedido_diagnostico(datos) -> tuple[list[str], list[str]]:
+    """{patologia_ids: [uuid, ...], sintomas: [código SNOMED, ...]} -> (ids sin repetir, códigos sin repetir).
+    `sintomas` puede venir vacía: el diagnóstico resulta inválido, no es un error del pedido."""
+    datos = _cuerpo(datos)
+    problemas = []
+    ids, codigos = datos.get("patologia_ids"), datos.get("sintomas", [])
+    if not isinstance(ids, list) or not ids:
+        problemas.append({"campo": "patologia_ids", "problema": "tiene que haber al menos una patología sospechada"})
+        ids = []
+    for i, valor in enumerate(ids):
+        if not isinstance(valor, str) or not validar_uuid(valor):
+            problemas.append({"campo": f"patologia_ids[{i}]", "problema": "no es un identificador válido"})
+    if not isinstance(codigos, list):
+        problemas.append({"campo": "sintomas", "problema": "debe ser una lista de códigos SNOMED"})
+        codigos = []
+    for i, valor in enumerate(codigos):
+        if not isinstance(valor, str) or not _SCTID_RE.match(valor.strip()):
+            problemas.append({"campo": f"sintomas[{i}]", "problema": "no tiene un código SNOMED válido"})
+    if problemas:
+        raise validation_error(problemas)
+    return list(dict.fromkeys(ids)), list(dict.fromkeys(c.strip() for c in codigos))
 
 
 def validar_modificacion_patologia(datos) -> tuple[dict, list[dict]]:
