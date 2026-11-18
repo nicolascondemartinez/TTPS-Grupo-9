@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { api } from '../../api/client.js'
 import Boton from '../../components/Boton.jsx'
 import Chip from '../../components/Chip.jsx'
+import Icono from '../../components/Icono.jsx'
 import ModalConfirmacion from '../../components/ModalConfirmacion.jsx'
 import { useNotificar } from '../../components/Notificaciones.jsx'
 import Tarjeta from '../../components/Tarjeta.jsx'
@@ -17,7 +18,10 @@ export default function MiTurno({ estudioId, alCancelar }) {
   const [cancelando, setCancelando] = useState(false)
 
   useEffect(() => {
-    api.get(`/estudios/${estudioId}/turno`).then(setTurno).catch((e) => setError(mensajeDeError(e)))
+    api
+      .get(`/estudios/${estudioId}/turno`)
+      .then(setTurno)
+      .catch((e) => setError(mensajeDeError(e)))
   }, [estudioId])
 
   const cancelar = async () => {
@@ -32,8 +36,20 @@ export default function MiTurno({ estudioId, alCancelar }) {
       setCancelando(false)
     }
   }
+  const descargar = async (documento, nombre) => {
+    try {
+      await api.descargar(`/turnos/${turno.id}/${documento}.pdf`, nombre)
+    } catch (e) {
+      notificar(mensajeDeError(e), 'error')
+    }
+  }
 
-  if (error) return <p role="alert" className="turnos__error">{error}</p>
+  if (error)
+    return (
+      <p role="alert" className="turnos__error">
+        {error}
+      </p>
+    )
   if (!turno) return <p role="status">Cargando tu turno…</p>
 
   const restantes = turno.inasistencias_maximas - turno.inasistencias
@@ -45,11 +61,30 @@ export default function MiTurno({ estudioId, alCancelar }) {
           <span className="turnos__hora">{hora(turno.fecha_hora)} hs</span>
         </p>
         <p>
-          <strong>{turno.centro.nombre}</strong><br />
+          <strong>{turno.centro.nombre}</strong>
+          <br />
           <span className="turnos__texto">{turno.centro.direccion}</span>
         </p>
         <p className="turnos__texto">No necesitás ninguna preparación especial (no hace falta ayuno).</p>
-
+        <div className="turnos__documentos">
+          <p className="turnos__texto">Llevá la orden de extracción y el consentimiento informado impreso y firmado.</p>
+          <div className="turnos__acciones">
+            <Boton
+              variante="secundario"
+              icono={<Icono nombre="documento" tamano={18} />}
+              onClick={() => descargar('orden', 'orden-de-extraccion.pdf')}
+            >
+              Orden de extracción
+            </Boton>
+            <Boton
+              variante="secundario"
+              icono={<Icono nombre="documento" tamano={18} />}
+              onClick={() => descargar('consentimiento', 'consentimiento-informado.pdf')}
+            >
+              Consentimiento informado
+            </Boton>
+          </div>
+        </div>
         <div className="turnos__inasistencias">
           <Chip tipo={turno.inasistencias > 0 ? 'atencion' : 'neutro'}>
             Inasistencias: {turno.inasistencias} de {turno.inasistencias_maximas}
@@ -62,15 +97,25 @@ export default function MiTurno({ estudioId, alCancelar }) {
         </div>
 
         <div className="turnos__acciones">
-          <Boton variante="secundario" className="btn-peligro-borde" onClick={() => setConfirmando(true)} disabled={cancelando}>
+          <Boton
+            variante="secundario"
+            className="btn-peligro-borde"
+            onClick={() => setConfirmando(true)}
+            disabled={cancelando}
+          >
             {cancelando ? 'Cancelando…' : 'Cancelar turno'}
           </Boton>
         </div>
       </Tarjeta>
 
       <ModalConfirmacion
-        abierto={confirmando} titulo="¿Cancelar el turno?" peligro textoConfirmar="Cancelar turno" textoCancelar="Volver"
-        onConfirmar={cancelar} onCancelar={() => setConfirmando(false)}
+        abierto={confirmando}
+        titulo="¿Cancelar el turno?"
+        peligro
+        textoConfirmar="Cancelar turno"
+        textoCancelar="Volver"
+        onConfirmar={cancelar}
+        onCancelar={() => setConfirmando(false)}
       >
         El turno del {diaDeHorario(turno.fecha_hora)} a las {hora(turno.fecha_hora)} hs queda libre para otra persona.
         Cancelar no cuenta como inasistencia y vas a poder sacar otro.
