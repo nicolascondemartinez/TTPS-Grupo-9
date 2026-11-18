@@ -32,6 +32,7 @@
 .turnos__fecha { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; }
 .turnos__dia { font-family: var(--font-titulo); font-weight: 600; font-size: 22px; }
 .turnos__hora { font-family: var(--font-titulo); font-weight: 600; font-size: 22px; color: var(--violeta-600); }
+.turnos__documentos { display: flex; flex-direction: column; gap: 10px; padding: 14px 0; border-top: 1px solid var(--linea); border-bottom: 1px solid var(--linea); }
 .turnos__inasistencias { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 .btn-secundario.btn-peligro-borde { border-color: #be123c; color: #be123c; }
 
