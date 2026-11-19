@@ -33,7 +33,7 @@ def crear_estudio(db, crear_usuario):
         usuario = crear_usuario(rol=RolUsuario.paciente, correo=correo)
         db.add(Paciente(
             usuario_id=usuario.id, dni=dni, fecha_nacimiento=date(1990, 1, 1), medico_alta_id=medico.id,
-            diagnostico_presuntivo_id=patologia.id, tipo_sospecha=TipoSospecha.clinica, historia_clinica="Resumen",
+            diagnostico_presuntivo=[patologia], tipo_sospecha=TipoSospecha.clinica, historia_clinica="Resumen",
         ))
         db.flush()
         estudio = Estudio(paciente_id=usuario.id, medico_id=medico.id)

@@ -41,14 +41,16 @@ class PatologiaSintoma(Base):
 
 
 class Paciente(Base, CreatedAt):
-    """Perfil 1:1 con usuario. Si es menor, el mail/teléfono del usuario son los del padre/madre."""
+    """Perfil 1:1 con usuario (nombre, apellido, teléfono y mail están en `usuario`). Si es menor, el mail/teléfono
+    del usuario son los del padre/madre. El diagnóstico presuntivo es una o más patologías (al menos una se valida
+    en el alta). Los datos clínicos solo los ven el médico que lo dio de alta y el propio paciente (se filtra en
+    la aplicación, como en pagos: si no es suyo, 404)."""
 
     __tablename__ = "paciente"
     usuario_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("usuario.id", ondelete="CASCADE"), primary_key=True)
     dni: Mapped[str] = mapped_column(String(15), unique=True)
     fecha_nacimiento: Mapped[date] = mapped_column(Date)
     medico_alta_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("medico.usuario_id", ondelete="RESTRICT"))
-    diagnostico_presuntivo_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("patologia.id", ondelete="RESTRICT"))
     tipo_sospecha: Mapped[TipoSospecha] = mapped_column(pg_enum(TipoSospecha, "tipo_sospecha"))
     historia_clinica: Mapped[str] = mapped_column(Text)  # texto transcripto y confirmado (no se guarda el audio)
     familiograma_url: Mapped[str | None] = mapped_column(Text)  # PDF del módulo 1 en Storage; opcional
@@ -56,7 +58,7 @@ class Paciente(Base, CreatedAt):
     usuario: Mapped["Usuario"] = relationship()  # noqa: F821
     sintomas: Mapped[list["Sintoma"]] = relationship(secondary="paciente_sintoma")
     familiares: Mapped[list["Familiar"]] = relationship(back_populates="paciente", cascade="all, delete-orphan")
-    diagnostico_presuntivo: Mapped["Patologia"] = relationship()
+    diagnostico_presuntivo: Mapped[list["Patologia"]] = relationship(secondary="paciente_patologia")
 
     __table_args__ = (Index("ix_paciente_medico_alta_id", "medico_alta_id"),)
 
@@ -66,6 +68,14 @@ paciente_sintoma = Table(
     Base.metadata,
     Column("paciente_id", Uuid(as_uuid=True), ForeignKey("paciente.usuario_id", ondelete="CASCADE"), primary_key=True),
     Column("sintoma_id", Uuid(as_uuid=True), ForeignKey("sintoma.id", ondelete="RESTRICT"), primary_key=True),
+)
+
+# Diagnóstico presuntivo: las patologías que el médico sospecha (una o más).
+paciente_patologia = Table(
+    "paciente_patologia",
+    Base.metadata,
+    Column("paciente_id", Uuid(as_uuid=True), ForeignKey("paciente.usuario_id", ondelete="CASCADE"), primary_key=True),
+    Column("patologia_id", Uuid(as_uuid=True), ForeignKey("patologia.id", ondelete="RESTRICT"), primary_key=True),
 )
 
 

@@ -47,12 +47,15 @@ usá la conexión directa o el session pooler (5432).
 6. `patologia_sintoma`: una patología puede tener uno o más síntomas cardinales (`es_cardinal`), y un mismo síntoma puede ser cardinal de varias patologías.
 7. `cobertura` no tiene estado propio: autorizada/rechazada se deduce del estado del estudio y su historial.
 8. `paciente.familiograma_url` es opcional (el cliente dijo que puede quedar vacío).
+9. El diagnóstico presuntivo del paciente es una o más patologías (`paciente_patologia`). Una patología sospechada
+   en algún paciente no se puede borrar (RESTRICT); al borrar el paciente se borran su diagnóstico y sus familiares.
 
 
 ## Queda en la aplicación (no en la base)
 
 Tope de 10 estudios por lote; grilla de turnos (15 min, L–V, 9–18, sin feriados); coherencia entre `usuario.rol` y su perfil;
-precio (USD 500 hasta 5 genes + USD 30 por gen adicional); `es_pompe_urgente` (Pompe y menor de 4 meses al dar de alta);
+precio (USD 500 hasta 5 genes + USD 30 por gen adicional); `es_pompe_urgente` (Pompe y menor de 4 meses de calendario al dar de alta: `core/clinico/edad.py`);
+al menos una patología en el diagnóstico presuntivo; quién ve los datos clínicos del paciente (su médico y él mismo);
 transiciones válidas de estado; reinicio de `inasistencias` al volver a `creado`.
 
 Nota ORM: entre tablas sin `relationship()` SQLAlchemy no garantiza el orden de INSERT dentro de un mismo flush;
