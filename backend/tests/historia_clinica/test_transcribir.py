@@ -10,6 +10,12 @@ from src.core.enums import RolUsuario
 RUTA = "/api/historia-clinica/transcribir"
 
 
+@pytest.fixture(autouse=True)
+def transcripcion_mock(monkeypatch):
+    """Siempre el mock, aunque el .env local tenga TRANSCRIPCION_MODE=real."""
+    monkeypatch.setenv("TRANSCRIPCION_MODE", "mock")
+
+
 @pytest.fixture
 def medico(api, crear_usuario):
     crear_usuario(rol=RolUsuario.medico, correo="medico@exoma.test")
@@ -50,6 +56,16 @@ def test_audio_vacio(api, medico):
 def test_formato_no_soportado(api, medico, tipo, nombre):
     assert "no es un formato de audio soportado" in problema(enviar(api, medico, tipo=tipo, nombre=nombre))
 
+
+
+def test_audio_que_no_se_puede_leer(api, medico, monkeypatch):
+    from src.adapters.transcripcion import AudioIlegible
+    from src.adapters.transcripcion.mock import TranscripcionMock
+
+    def ilegible(self, audio, tipo):
+        raise AudioIlegible("dañado")
+    monkeypatch.setattr(TranscripcionMock, "transcribir", ilegible)
+    assert problema(enviar(api, medico)) == "no se pudo leer: grabá de nuevo"
 
 def test_audio_demasiado_grande(api, medico):
     r = enviar(api, medico, audio=b"0" * (MAXIMO_AUDIO_BYTES + 1))

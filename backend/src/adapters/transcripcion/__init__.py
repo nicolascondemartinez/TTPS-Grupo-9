@@ -4,23 +4,37 @@
 
     texto = get_transcripcion().transcribir(audio, "audio/webm;codecs=opus")
 
-No es uno de los módulos de otros grupos: el reparto lo marca como simulado, así que solo hay mock (devuelve
-un texto de ejemplo). Por eso no sigue ADAPTERS_MODE: con ADAPTERS_MODE=real (por ejemplo, al desplegar) sigue
-usando el mock. TRANSCRIPCION_MODE=real da error hasta que haya un servicio real (por ejemplo, Whisper en el
-backend): para sumarlo, agregar real.py con la misma interfaz y crearlo con crear_adaptador como los demás.
+No es uno de los módulos de otros grupos: el reparto lo marca como simulado. Por eso no sigue ADAPTERS_MODE
+(con ADAPTERS_MODE=real, por ejemplo al desplegar, sigue en mock) y no usa crear_adaptador (no hay API ni URL):
+
+    TRANSCRIPCION_MODE    vacío o mock: devuelve un texto de ejemplo (por defecto, no necesita nada)
+                          real: transcribe con Whisper en el backend (`poetry install --with transcripcion`)
+    TRANSCRIPCION_MODELO  modelo de Whisper en modo real: base por defecto (tiny, base, small, ...)
 """
 import os
+from functools import lru_cache
 
-from src.adapters.transcripcion.interfaz import (FORMATOS_ACEPTADOS, FormatoNoSoportado, Transcripcion,
-                                                 es_formato_aceptado, tipo_base)
+from src.adapters.transcripcion.interfaz import (FORMATOS_ACEPTADOS, AudioIlegible, FormatoNoSoportado,
+                                                 Transcripcion, es_formato_aceptado, tipo_base)
 from src.adapters.transcripcion.mock import TranscripcionMock
 
 
+@lru_cache(maxsize=None)
+def _whisper(modelo: str) -> Transcripcion:
+    """Carga el modelo una sola vez por proceso (tarda; la primera vez además lo descarga)."""
+    from src.adapters.transcripcion.real import TranscripcionWhisper
+    return TranscripcionWhisper(modelo)
+
+
 def get_transcripcion() -> Transcripcion:
-    if (os.environ.get("TRANSCRIPCION_MODE") or "").strip().lower() == "real":
-        raise RuntimeError("TRANSCRIPCION_MODE=real: todavía no hay un servicio de transcripción real (usar mock)")
-    return TranscripcionMock()
+    modo = (os.environ.get("TRANSCRIPCION_MODE") or "mock").strip().lower()
+    if modo == "mock":
+        return TranscripcionMock()
+    if modo == "real":
+        from src.adapters.transcripcion.real import MODELO_POR_DEFECTO
+        return _whisper((os.environ.get("TRANSCRIPCION_MODELO") or MODELO_POR_DEFECTO).strip())
+    raise RuntimeError(f"TRANSCRIPCION_MODE inválido: {modo!r} (mock | real)")
 
 
-__all__ = ["FORMATOS_ACEPTADOS", "FormatoNoSoportado", "Transcripcion", "es_formato_aceptado", "get_transcripcion",
-           "tipo_base"]
+__all__ = ["FORMATOS_ACEPTADOS", "AudioIlegible", "FormatoNoSoportado", "Transcripcion", "es_formato_aceptado",
+           "get_transcripcion", "tipo_base"]

@@ -17,9 +17,9 @@ def test_sigue_con_el_mock_aunque_los_demas_modulos_esten_en_real(monkeypatch):
     assert isinstance(get_transcripcion(), TranscripcionMock)
 
 
-def test_en_modo_real_avisa_que_no_hay_servicio(monkeypatch):
-    monkeypatch.setenv("TRANSCRIPCION_MODE", "real")
-    with pytest.raises(RuntimeError, match="no hay un servicio de transcripción real"):
+def test_modo_invalido(monkeypatch):
+    monkeypatch.setenv("TRANSCRIPCION_MODE", "otro")
+    with pytest.raises(RuntimeError, match="TRANSCRIPCION_MODE inválido"):
         get_transcripcion()
 
 

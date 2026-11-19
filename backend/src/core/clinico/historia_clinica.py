@@ -4,7 +4,7 @@ El médico graba con el micrófono del navegador, el audio se transcribe y el te
 lo revise y lo confirme. El audio no se guarda: lo único que queda es el texto confirmado, que se guarda con el
 alta del paciente (`paciente.historia_clinica`).
 """
-from src.adapters.transcripcion import FORMATOS_ACEPTADOS, FormatoNoSoportado, get_transcripcion
+from src.adapters.transcripcion import FORMATOS_ACEPTADOS, AudioIlegible, FormatoNoSoportado, get_transcripcion
 from src.core.common.errors import ApiError, validation_error
 
 MAXIMO_AUDIO_MB = 10
@@ -25,4 +25,6 @@ def transcribir_audio(audio: bytes | None, tipo: str | None) -> str:
     except FormatoNoSoportado:
         formatos = ", ".join(f.split("/")[1] for f in FORMATOS_ACEPTADOS)
         raise validation_error([{"campo": "audio", "problema": f"no es un formato de audio soportado ({formatos})"}])
+    except AudioIlegible:
+        raise validation_error([{"campo": "audio", "problema": "no se pudo leer: grabá de nuevo"}])
     return texto.strip()
