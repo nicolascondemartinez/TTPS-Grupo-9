@@ -28,7 +28,8 @@ class Sintoma(Base, UuidPk):
 
 
 class PatologiaSintoma(Base):
-    """Definición de la patología (la edita el gerente médico): un cardinal y N secundarios."""
+    """Definición de la patología (la edita el gerente médico): uno o más cardinales y N secundarios.
+    Un mismo síntoma puede ser cardinal de varias patologías."""
 
     __tablename__ = "patologia_sintoma"
     patologia_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("patologia.id", ondelete="CASCADE"), primary_key=True)
@@ -37,10 +38,6 @@ class PatologiaSintoma(Base):
 
     patologia: Mapped["Patologia"] = relationship(back_populates="sintomas")
     sintoma: Mapped["Sintoma"] = relationship()
-
-    __table_args__ = (
-        Index("uq_patologia_sintoma_un_cardinal", "patologia_id", unique=True, postgresql_where=text("es_cardinal")),
-    )
 
 
 class Paciente(Base, CreatedAt):

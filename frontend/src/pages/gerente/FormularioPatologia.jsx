@@ -24,7 +24,7 @@ function erroresPorCampo(e) {
 }
 
 // Alta (/gerente/patologias/nueva) y modificación (/gerente/patologias/:id) de una patología.
-// Una patología tiene exactamente un síntoma cardinal y al menos un secundario, todos de SNOMED.
+// Una patología tiene al menos un síntoma cardinal y al menos un secundario, todos de SNOMED.
 // El nombre se elige al crearla y después queda fijo (Bioinformática busca los genes por nombre).
 export default function FormularioPatologia() {
   const { id } = useParams()
@@ -32,7 +32,7 @@ export default function FormularioPatologia() {
   const navigate = useNavigate()
   const notificar = useNotificar()
   const [nombre, setNombre] = useState('')
-  const [cardinal, setCardinal] = useState([])
+  const [cardinales, setCardinales] = useState([])
   const [secundarios, setSecundarios] = useState([])
   const [errores, setErrores] = useState({})
   const [errorGeneral, setErrorGeneral] = useState('')
@@ -44,7 +44,7 @@ export default function FormularioPatologia() {
     api.get(`/patologias/${id}`)
       .then((p) => {
         setNombre(p.nombre)
-        setCardinal(p.cardinal ? [p.cardinal] : [])
+        setCardinales(p.cardinales)
         setSecundarios(p.secundarios)
         setEstado('listo')
       })
@@ -57,7 +57,7 @@ export default function FormularioPatologia() {
   function validar() {
     const problemas = {}
     if (esAlta && !nombre.trim()) problemas.nombre = 'Ingresá el nombre de la patología.'
-    if (cardinal.length !== 1) problemas.cardinal = 'Elegí el síntoma cardinal.'
+    if (cardinales.length === 0) problemas.cardinales = 'Elegí al menos un síntoma cardinal.'
     if (secundarios.length === 0) problemas.secundarios = 'Elegí al menos un síntoma secundario.'
     return problemas
   }
@@ -72,7 +72,7 @@ export default function FormularioPatologia() {
 
     setEnviando(true)
     try {
-      const datos = { cardinal: cardinal[0], secundarios }
+      const datos = { cardinales, secundarios }
       if (esAlta) await api.post('/patologias', { nombre: nombre.trim(), ...datos })
       else await api.put(`/patologias/${id}`, datos)
       notificar(esAlta ? 'Patología creada' : 'Patología modificada')
@@ -120,21 +120,20 @@ export default function FormularioPatologia() {
             ayuda={esAlta ? 'Después de crearla, el nombre no se puede cambiar.' : 'El nombre no se puede modificar.'}
           />
           <SelectorSintomas
-            etiqueta="Síntoma cardinal"
-            valor={cardinal}
-            onChange={setCardinal}
-            maximo={1}
+            etiqueta="Síntomas cardinales"
+            valor={cardinales}
+            onChange={setCardinales}
             excluir={secundarios}
-            error={errores.cardinal}
-            ayuda="El síntoma principal de la patología. Hay uno solo."
+            error={errores.cardinales}
+            ayuda="Los síntomas principales de la patología. Al menos uno."
           />
           <SelectorSintomas
             etiqueta="Síntomas secundarios"
             valor={secundarios}
             onChange={setSecundarios}
-            excluir={cardinal}
+            excluir={cardinales}
             error={errores.secundarios}
-            ayuda="Al menos uno. El cardinal no puede repetirse acá."
+            ayuda="Al menos uno. Los cardinales no pueden repetirse acá."
           />
           {errorGeneral && <p role="alert" className="patologias__error">{errorGeneral}</p>}
         </Tarjeta>

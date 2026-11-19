@@ -30,8 +30,8 @@ def ver(patologia_id):
 @bp.post("/patologias")
 @require_permission("patologia_crear")
 def crear():
-    nombre, cardinal, secundarios = validar_alta_patologia(request.get_json(silent=True))
-    return patologia_view(clinico_service.crear_patologia(get_db(), nombre, cardinal, secundarios)), 201
+    nombre, cardinales, secundarios = validar_alta_patologia(request.get_json(silent=True))
+    return patologia_view(clinico_service.crear_patologia(get_db(), nombre, cardinales, secundarios)), 201
 
 
 @bp.post("/patologias/validar-diagnostico")
@@ -45,5 +45,5 @@ def validar_diagnostico():
 @bp.put("/patologias/<patologia_id>")
 @require_permission("patologia_editar")
 def modificar(patologia_id):
-    cardinal, secundarios = validar_modificacion_patologia(request.get_json(silent=True))
-    return patologia_view(clinico_service.modificar_patologia(get_db(), patologia_id, cardinal, secundarios))
+    cardinales, secundarios = validar_modificacion_patologia(request.get_json(silent=True))
+    return patologia_view(clinico_service.modificar_patologia(get_db(), patologia_id, cardinales, secundarios))

@@ -50,8 +50,8 @@ with nueva_sesion() as s:
         usuario("paciente@x.com", RolUsuario.paciente), usuario("transp@x.com", RolUsuario.transportista),
     )
     pato, pato2 = Patologia(nombre="Fabry-test"), Patologia(nombre="Pompe-test")
-    s1, s2 = Sintoma(snomed_code="1", termino="a"), Sintoma(snomed_code="2", termino="b")
-    s.add_all([prov, medico_u, gerente_u, paciente_u, transp_u, pato, pato2, s1, s2])
+    s1, s2, s3 = Sintoma(snomed_code="1", termino="a"), Sintoma(snomed_code="2", termino="b"), Sintoma(snomed_code="3", termino="c")
+    s.add_all([prov, medico_u, gerente_u, paciente_u, transp_u, pato, pato2, s1, s2, s3])
     s.flush()
     medico = Medico(usuario_id=medico_u.id, matricula="M1")
     gerente = GerenteMedico(usuario_id=gerente_u.id, matricula="G1")
@@ -69,8 +69,9 @@ with nueva_sesion() as s:
         s.add(usuario("t2@x.com", RolUsuario.transportista)), s.flush(),
         s.add(Transportista(usuario_id=s.scalar(__import__("sqlalchemy").select(Usuario.id).where(Usuario.email == "t2@x.com")), provincia_id=prov.id))))
     debe_pasar(s, "un síntoma cardinal", lambda: s.add(PatologiaSintoma(patologia_id=pato.id, sintoma_id=s1.id, es_cardinal=True)))
-    debe_fallar(s, "segundo síntoma cardinal en la misma patología", lambda: s.add(PatologiaSintoma(patologia_id=pato.id, sintoma_id=s2.id, es_cardinal=True)))
-    debe_pasar(s, "síntoma secundario", lambda: s.add(PatologiaSintoma(patologia_id=pato.id, sintoma_id=s2.id, es_cardinal=False)))
+    debe_pasar(s, "segundo síntoma cardinal en la misma patología", lambda: s.add(PatologiaSintoma(patologia_id=pato.id, sintoma_id=s2.id, es_cardinal=True)))
+    debe_pasar(s, "el mismo síntoma cardinal en otra patología", lambda: s.add(PatologiaSintoma(patologia_id=pato2.id, sintoma_id=s1.id, es_cardinal=True)))
+    debe_pasar(s, "síntoma secundario", lambda: s.add(PatologiaSintoma(patologia_id=pato.id, sintoma_id=s3.id, es_cardinal=False)))
 
     print("Estudio / análisis")
     est = Estudio(paciente_id=paciente.usuario_id, medico_id=medico.usuario_id)

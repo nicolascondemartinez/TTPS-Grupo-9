@@ -194,7 +194,7 @@ export default function Design() {
       <Seccion
         etiqueta="10"
         titulo="Selector de síntomas (SNOMED)"
-        codigo={`const [sintomas, setSintomas] = useState([])   // [{ snomed_code, termino }]\n<SelectorSintomas etiqueta="Síntomas del paciente" valor={sintomas} onChange={setSintomas} />\n// Opcionales: maximo={1} (un solo síntoma, ej. el cardinal) y excluir={cardinal} (no se ofrecen).\n// Busca desde 3 letras en GET /api/sintomas (permiso sintoma_buscar: médico y gerente médico).\n// Acá, sin haber ingresado con uno de esos roles, se ve el mensaje de error de la API.`}
+        codigo={`const [sintomas, setSintomas] = useState([])   // [{ snomed_code, termino }]\n<SelectorSintomas etiqueta="Síntomas del paciente" valor={sintomas} onChange={setSintomas} />\n// Opcionales: maximo={1} (un solo síntoma) y excluir={cardinales} (no se ofrecen).\n// Busca desde 3 letras en GET /api/sintomas (permiso sintoma_buscar: médico y gerente médico).\n// Acá, sin haber ingresado con uno de esos roles, se ve el mensaje de error de la API.`}
       >
         <div style={{ maxWidth: 520 }}>
           <SelectorSintomas etiqueta="Síntomas del paciente" valor={sintomas} onChange={setSintomas} />

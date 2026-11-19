@@ -24,7 +24,7 @@ export default function Patologias() {
 
   const columnas = [
     { clave: 'nombre', titulo: 'Patología', render: (p) => <strong>{p.nombre}</strong> },
-    { clave: 'cardinal', titulo: 'Síntoma cardinal', render: (p) => p.cardinal?.termino ?? '—' },
+    { clave: 'cardinales', titulo: 'Síntomas cardinales', render: (p) => p.cardinales.map((s) => s.termino).join(' · ') || '—' },
     {
       clave: 'secundarios',
       titulo: 'Síntomas secundarios',

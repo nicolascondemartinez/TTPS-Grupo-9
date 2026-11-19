@@ -11,8 +11,8 @@ import Icono from './Icono.jsx'
 //   <SelectorSintomas etiqueta="Síntomas del paciente" valor={sintomas} onChange={setSintomas} />
 //
 // Opcionales:
-//   maximo   tope de síntomas (ej. el cardinal de una patología: maximo={1})
-//   excluir  síntomas que no se ofrecen aunque coincidan (ej. el cardinal en la lista de secundarios)
+//   maximo   tope de síntomas (ej. maximo={1} si solo se puede elegir uno)
+//   excluir  síntomas que no se ofrecen aunque coincidan (ej. los cardinales en la lista de secundarios)
 //   buscar   reemplaza la consulta a la API: (texto) => Promise<[{ snomed_code, termino }]>
 const MINIMO_LETRAS = 3
 const ESPERA_MS = 300

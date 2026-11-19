@@ -29,8 +29,8 @@ def gerente(api, crear_usuario):
     return api.token(correo=GERENTE)
 
 
-def alta(nombre="Patología de prueba", cardinal=FIEBRE, secundarios=(CEFALEA, FATIGA)):
-    return {"nombre": nombre, "cardinal": cardinal, "secundarios": list(secundarios)}
+def alta(nombre="Patología de prueba", cardinales=(FIEBRE,), secundarios=(CEFALEA, FATIGA)):
+    return {"nombre": nombre, "cardinales": list(cardinales), "secundarios": list(secundarios)}
 
 
 def post(api, token, cuerpo):
@@ -53,10 +53,20 @@ def test_el_gerente_crea_una_patologia_con_cardinal_y_secundarios(api, gerente):
     assert r.status_code == 201
     creada = r.get_json()
     assert creada["nombre"] == "Patología de prueba"
-    assert creada["cardinal"] == FIEBRE
+    assert creada["cardinales"] == [FIEBRE]
     assert creada["secundarios"] == [CEFALEA, FATIGA]  # ordenados por término
     assert api.get(f"/api/patologias/{creada['id']}", gerente).get_json() == creada
 
+
+def test_una_patologia_puede_tener_varios_cardinales(api, gerente):
+    r = post(api, gerente, alta(cardinales=[FIEBRE, CEFALEA], secundarios=[FATIGA]))
+    assert r.status_code == 201
+    assert r.get_json()["cardinales"] == [CEFALEA, FIEBRE]  # ordenados por término
+
+
+def test_un_mismo_sintoma_puede_ser_cardinal_de_varias_patologias(api, gerente):
+    assert post(api, gerente, alta("Una", [FIEBRE], [CEFALEA])).status_code == 201
+    assert post(api, gerente, alta("Otra", [FIEBRE], [FATIGA])).status_code == 201
 
 def test_el_listado_trae_todas_ordenadas_por_nombre(api, gerente):
     post(api, gerente, alta("Zeta"))
@@ -68,18 +78,18 @@ def test_el_listado_trae_todas_ordenadas_por_nombre(api, gerente):
 
 def test_el_gerente_modifica_los_sintomas(api, gerente):
     creada = post(api, gerente, alta()).get_json()
-    r = put(api, gerente, creada["id"], {"cardinal": CEFALEA, "secundarios": [FIEBRE, DIARREA]})
+    r = put(api, gerente, creada["id"], {"cardinales": [CEFALEA], "secundarios": [FIEBRE, DIARREA]})
     assert r.status_code == 200
     modificada = r.get_json()
     assert modificada["nombre"] == creada["nombre"]
-    assert modificada["cardinal"] == CEFALEA
+    assert modificada["cardinales"] == [CEFALEA]
     assert modificada["secundarios"] == [DIARREA, FIEBRE]
     assert api.get(f"/api/patologias/{creada['id']}", gerente).get_json() == modificada
 
 
 def test_los_sintomas_se_guardan_una_sola_vez_en_la_cache(api, gerente, db):
-    post(api, gerente, alta("Una", FIEBRE, [CEFALEA]))
-    post(api, gerente, alta("Otra", CEFALEA, [FIEBRE, FATIGA]))
+    post(api, gerente, alta("Una", [FIEBRE], [CEFALEA]))
+    post(api, gerente, alta("Otra", [CEFALEA], [FIEBRE, FATIGA]))
     assert db.scalar(select(func.count()).select_from(Sintoma)) == 3
 
 
@@ -97,7 +107,7 @@ def test_el_medico_lista_pero_no_crea_ni_modifica(api, gerente, crear_usuario):
     medico = api.token(correo="m@exoma.test")
     assert api.get("/api/patologias", medico).status_code == 200
     assert post(api, medico, alta("Otra")).status_code == 403
-    assert put(api, medico, creada["id"], {"cardinal": CEFALEA, "secundarios": [FIEBRE]}).status_code == 403
+    assert put(api, medico, creada["id"], {"cardinales": [CEFALEA], "secundarios": [FIEBRE]}).status_code == 403
 
 
 @pytest.mark.parametrize("rol", [RolUsuario.paciente, RolUsuario.administrativo, RolUsuario.bioinformatico])
@@ -115,18 +125,26 @@ def test_sin_token_recibe_401(api):
 
 # ---------- Validaciones ----------
 
-def test_sin_cardinal_ni_secundarios(api, gerente):
+def test_sin_cardinales_ni_secundarios(api, gerente):
     problemas = campos_con_problema(post(api, gerente, {"nombre": "X", "secundarios": []}))
-    assert problemas == {"cardinal": "es obligatorio", "secundarios": "tiene que haber al menos un síntoma secundario"}
+    assert problemas == {"cardinales": "tiene que haber al menos un síntoma cardinal",
+                         "secundarios": "tiene que haber al menos un síntoma secundario"}
+    problemas = campos_con_problema(post(api, gerente, alta(cardinales=[])))
+    assert problemas == {"cardinales": "tiene que haber al menos un síntoma cardinal"}
 
 
 def test_sin_nombre(api, gerente):
     assert campos_con_problema(post(api, gerente, alta(nombre="   "))) == {"nombre": "es obligatorio"}
 
 
-def test_el_cardinal_no_puede_repetirse_como_secundario(api, gerente):
-    problemas = campos_con_problema(post(api, gerente, alta(cardinal=FIEBRE, secundarios=[CEFALEA, FIEBRE])))
-    assert problemas == {"secundarios[1]": "el síntoma cardinal no puede ser también secundario"}
+def test_un_cardinal_no_puede_repetirse_como_secundario(api, gerente):
+    problemas = campos_con_problema(post(api, gerente, alta(cardinales=[DIARREA, FIEBRE], secundarios=[CEFALEA, FIEBRE])))
+    assert problemas == {"secundarios[1]": "un síntoma cardinal no puede ser también secundario"}
+
+
+def test_un_cardinal_no_puede_repetirse(api, gerente):
+    problemas = campos_con_problema(post(api, gerente, alta(cardinales=[FIEBRE, FIEBRE])))
+    assert problemas == {"cardinales[1]": "el síntoma está repetido"}
 
 
 def test_un_secundario_no_puede_repetirse(api, gerente):
@@ -140,18 +158,18 @@ def test_un_secundario_no_puede_repetirse(api, gerente):
     {"snomed_code": "386661006", "termino": "  "},     # sin término
 ])
 def test_no_acepta_sintomas_que_no_vengan_de_snomed(api, gerente, sintoma):
-    assert "cardinal" in campos_con_problema(post(api, gerente, alta(cardinal=sintoma)))
+    assert "cardinales[0]" in campos_con_problema(post(api, gerente, alta(cardinales=[sintoma])))
 
 
 def test_al_modificar_el_nombre_queda_fijo(api, gerente):
     creada = post(api, gerente, alta()).get_json()
-    r = put(api, gerente, creada["id"], {"nombre": "Otro", "cardinal": FIEBRE, "secundarios": [CEFALEA]})
+    r = put(api, gerente, creada["id"], {"nombre": "Otro", "cardinales": [FIEBRE], "secundarios": [CEFALEA]})
     assert campos_con_problema(r) == {"nombre": "no se puede modificar"}
 
 
 def test_modificar_valida_igual_que_el_alta(api, gerente):
     creada = post(api, gerente, alta()).get_json()
-    r = put(api, gerente, creada["id"], {"cardinal": FIEBRE, "secundarios": []})
+    r = put(api, gerente, creada["id"], {"cardinales": [FIEBRE], "secundarios": []})
     assert "secundarios" in campos_con_problema(r)
     assert api.get(f"/api/patologias/{creada['id']}", gerente).get_json() == creada  # no cambió nada
 
@@ -159,7 +177,7 @@ def test_modificar_valida_igual_que_el_alta(api, gerente):
 @pytest.mark.parametrize("patologia_id", [str(uuid.uuid4()), "no-es-un-uuid"])
 def test_patologia_inexistente_da_404(api, gerente, patologia_id):
     assert api.get(f"/api/patologias/{patologia_id}", gerente).status_code == 404
-    r = put(api, gerente, patologia_id, {"cardinal": FIEBRE, "secundarios": [CEFALEA]})
+    r = put(api, gerente, patologia_id, {"cardinales": [FIEBRE], "secundarios": [CEFALEA]})
     assert r.status_code == 404 and r.get_json()["error"]["codigo"] == "PATOLOGIA_NO_ENCONTRADA"
 
 
@@ -170,16 +188,16 @@ def _cargar_las_5(db):
     db.commit()
 
 
-def test_el_seed_deja_las_5_patologias_con_un_cardinal_y_secundarios(db):
+def test_el_seed_deja_las_5_patologias_con_sus_cardinales_y_secundarios(db):
     _cargar_las_5(db)
     assert cargar_sintomas_de_patologias(db) == 5
     db.commit()
     for nombre in PATOLOGIAS:
         patologia = db.scalar(select(Patologia).where(Patologia.nombre == nombre))
-        cardinales = [ps.sintoma.snomed_code for ps in patologia.sintomas if ps.es_cardinal]
+        cardinales = {ps.sintoma.snomed_code for ps in patologia.sintomas if ps.es_cardinal}
         secundarios = {ps.sintoma.snomed_code for ps in patologia.sintomas if not ps.es_cardinal}
         esperado = SINTOMAS_POR_PATOLOGIA[nombre]
-        assert cardinales == [esperado["cardinal"].snomed_code]
+        assert cardinales == {s.snomed_code for s in esperado["cardinales"]}
         assert secundarios == {s.snomed_code for s in esperado["secundarios"]}
 
 
@@ -188,12 +206,12 @@ def test_el_seed_se_puede_repetir_y_no_pisa_lo_que_modifico_el_gerente(api, gere
     cargar_sintomas_de_patologias(db)
     db.commit()
     fabry = next(p for p in api.get("/api/patologias", gerente).get_json()["patologias"] if p["nombre"] == "Fabry")
-    put(api, gerente, fabry["id"], {"cardinal": FIEBRE, "secundarios": [CEFALEA]})
+    put(api, gerente, fabry["id"], {"cardinales": [FIEBRE], "secundarios": [CEFALEA]})
 
     db.expire_all()
     assert cargar_sintomas_de_patologias(db) == 0
     db.commit()
     assert db.scalar(select(func.count()).select_from(PatologiaSintoma)) == 2 + sum(
-        1 + len(d["secundarios"]) for n, d in SINTOMAS_POR_PATOLOGIA.items() if n != "Fabry"
+        len(d["cardinales"]) + len(d["secundarios"]) for n, d in SINTOMAS_POR_PATOLOGIA.items() if n != "Fabry"
     )
-    assert api.get(f"/api/patologias/{fabry['id']}", gerente).get_json()["cardinal"] == FIEBRE
+    assert api.get(f"/api/patologias/{fabry['id']}", gerente).get_json()["cardinales"] == [FIEBRE]
