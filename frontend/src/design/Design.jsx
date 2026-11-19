@@ -19,6 +19,7 @@ import Tarjeta from '../components/Tarjeta.jsx'
 import { ESTADOS_ESTUDIO } from '../constants/estados.js'
 import Mapa from '../components/Mapa.jsx'
 import SelectorSintomas from '../components/SelectorSintomas.jsx'
+import GrabadorHistoriaClinica from '../components/GrabadorHistoriaClinica.jsx'
 
 // Catálogo de la base de frontend: muestra cada componente y cómo usarlo.
 // Datos de ejemplo solamente.
@@ -64,6 +65,7 @@ export default function Design() {
   const notificar = useNotificar()
   const [centroElegido, setCentroElegido] = useState('c2')
   const [sintomas, setSintomas] = useState([])
+  const [historia, setHistoria] = useState('')
 
   useEffect(() => {
     api.get('/health').then((d) => setApiEstado(d.status)).catch(() => setApiEstado('sin conexión'))
@@ -200,6 +202,21 @@ export default function Design() {
           <SelectorSintomas etiqueta="Síntomas del paciente" valor={sintomas} onChange={setSintomas} />
         </div>
         <p className="tarjeta__subtitulo">Valor: {sintomas.length ? sintomas.map((s) => `${s.snomed_code} ${s.termino}`).join(' · ') : 'ninguno'}</p>
+      </Seccion>
+
+      <Seccion
+        etiqueta="11"
+        titulo="Grabador de la historia clínica"
+        codigo={`const [historia, setHistoria] = useState('')
+<GrabadorHistoriaClinica valor={historia} onChange={setHistoria} error={errores.historia_clinica} />
+// Graba con el micrófono y transcribe en POST /api/historia-clinica/transcribir (permiso historia_clinica_grabar: médico).
+// Reanudar agrega un tramo al final; Volver a grabar borra y empieza de cero. Sin micrófono, se escribe a mano.
+// El micrófono solo funciona en https o en localhost. Acá, sin haber ingresado como médico, la transcripción da error.`}
+      >
+        <div style={{ maxWidth: 640 }}>
+          <GrabadorHistoriaClinica valor={historia} onChange={setHistoria} />
+        </div>
+        <p className="tarjeta__subtitulo">Valor: {historia ? `${historia.length} caracteres` : 'vacío'}</p>
       </Seccion>
     </div>
   )
