@@ -1,5 +1,5 @@
-"""Tests unitarios de la regla del diagnóstico presuntivo (sin base de datos): válido con el síntoma cardinal
-o con al menos dos secundarios de la patología sospechada. Usa los síntomas reales de las 5 patologías."""
+"""Tests unitarios de la regla del diagnóstico presuntivo (sin base de datos): válido con alguno de los síntomas
+cardinales o con al menos dos secundarios de la patología sospechada. Usa los síntomas reales de las 5 patologías."""
 import uuid
 
 import pytest
@@ -11,9 +11,9 @@ from src.core.models import Patologia, PatologiaSintoma, Sintoma
 
 
 def patologia(nombre: str) -> Patologia:
-    """La patología en memoria, con su cardinal y secundarios como quedan después del seed."""
+    """La patología en memoria, con sus cardinales y secundarios como quedan después del seed."""
     definicion = SINTOMAS_POR_PATOLOGIA[nombre]
-    sintomas = [(definicion["cardinal"], True)] + [(x, False) for x in definicion["secundarios"]]
+    sintomas = [(x, True) for x in definicion["cardinales"]] + [(x, False) for x in definicion["secundarios"]]
     return Patologia(
         id=uuid.uuid4(),
         nombre=nombre,
@@ -122,6 +122,38 @@ def test_patologia_sin_cardinal_definido_no_rompe():
     assert "no presenta el síntoma cardinal y presenta solo 1" in r.motivo
 
 
+
+# ---------- Patología con varios cardinales: alcanza con uno ----------
+
+@pytest.fixture
+def con_dos_cardinales():
+    return Patologia(id=uuid.uuid4(), nombre="Doble", sintomas=[
+        PatologiaSintoma(sintoma=Sintoma(snomed_code=x.snomed_code, termino=x.termino), es_cardinal=c)
+        for x, c in [(s.ESPLENOMEGALIA, True), (s.HEPATOMEGALIA, True),
+                     (s.ANEMIA, False), (s.DOLOR_OSEO, False), (s.OSTEOPENIA, False)]
+    ])
+
+
+def test_con_varios_cardinales_alcanza_con_uno(con_dos_cardinales):
+    r = validar_diagnostico(con_dos_cardinales, codigos(s.HEPATOMEGALIA))
+    assert r.valido and r.cardinal_presente and r.cardinales_presentes == ("hepatomegalia",)
+    assert r.motivo == "El paciente presenta el síntoma cardinal de Doble (hepatomegalia)."
+
+
+def test_con_todos_los_cardinales_los_nombra_a_todos(con_dos_cardinales):
+    r = validar_diagnostico(con_dos_cardinales, codigos(s.ESPLENOMEGALIA, s.HEPATOMEGALIA))
+    assert r.valido and r.cardinales_presentes == ("esplenomegalia", "hepatomegalia")
+    assert r.motivo == "El paciente presenta los síntomas cardinales de Doble: esplenomegalia, hepatomegalia."
+
+
+def test_sin_ninguno_de_los_cardinales_y_un_secundario_es_invalido(con_dos_cardinales):
+    r = validar_diagnostico(con_dos_cardinales, codigos(s.ANEMIA))
+    assert not r.valido and not r.cardinal_presente and r.cardinales_presentes == ()
+    assert r.motivo == (
+        "El diagnóstico de Doble no es consistente: el paciente no presenta ninguno de los síntomas cardinales "
+        "(esplenomegalia, hepatomegalia) y presenta solo 1 de los 2 síntomas secundarios necesarios (anemia)."
+    )
+
 # ---------- Varias patologías sospechadas: se valida cada una ----------
 
 def test_con_varias_patologias_se_valida_cada_una():
@@ -136,8 +168,8 @@ def test_con_varias_patologias_se_valida_cada_una():
 
 
 @pytest.mark.parametrize("nombre", list(SINTOMAS_POR_PATOLOGIA))
-def test_las_5_patologias_validan_con_su_cardinal_y_no_con_un_solo_secundario(nombre):
+def test_las_5_patologias_validan_con_un_cardinal_y_no_con_un_solo_secundario(nombre):
     definicion = SINTOMAS_POR_PATOLOGIA[nombre]
-    assert validar_diagnostico(patologia(nombre), codigos(definicion["cardinal"])).valido
+    assert validar_diagnostico(patologia(nombre), codigos(*definicion["cardinales"][:1])).valido
     assert not validar_diagnostico(patologia(nombre), codigos(definicion["secundarios"][0])).valido
     assert validar_diagnostico(patologia(nombre), codigos(*definicion["secundarios"][:2])).valido

@@ -1,7 +1,7 @@
 """Síntomas fijos para desarrollo y tests: no son una referencia clínica.
 
 Códigos y términos verificados contra la API real (términos en minúscula, como los devuelve).
-SINTOMAS_POR_PATOLOGIA (un cardinal y varios secundarios por patología, como patologia_sintoma)
+SINTOMAS_POR_PATOLOGIA (cardinales y secundarios por patología, como patologia_sintoma)
 está para que los tests de la validación del diagnóstico usen los mismos datos.
 """
 from src.adapters.snomed.interfaz import LIMITE_POR_DEFECTO, SintomaSnomed, normalizar, texto_buscable
@@ -34,23 +34,23 @@ HIPERLIPIDEMIA = _S("55822004", "hiperlipidemia")
 
 SINTOMAS_POR_PATOLOGIA = {
     "Fabry": {
-        "cardinal": DOLOR_NEUROPATICO,
+        "cardinales": (DOLOR_NEUROPATICO,),
         "secundarios": (ANGIOQUERATOMA, HIPOHIDROSIS, OPACIDAD_CORNEAL, PROTEINURIA, AUDICION_DISMINUIDA),
     },
     "Pompe": {
-        "cardinal": DEBILIDAD_MUSCULAR,
+        "cardinales": (DEBILIDAD_MUSCULAR,),
         "secundarios": (TONO_MUSCULAR_DISMINUIDO, CARDIOMEGALIA, DISNEA, MACROGLOSIA, HEPATOMEGALIA),
     },
     "Mucopolisacaridosis 1": {
-        "cardinal": RIGIDEZ_ARTICULAR,
+        "cardinales": (RIGIDEZ_ARTICULAR,),
         "secundarios": (OPACIDAD_CORNEAL, HEPATOESPLENOMEGALIA, HERNIA_UMBILICAL, HERNIA_INGUINAL, BAJA_ESTATURA),
     },
     "Gaucher": {
-        "cardinal": ESPLENOMEGALIA,
+        "cardinales": (ESPLENOMEGALIA,),
         "secundarios": (HEPATOMEGALIA, TROMBOCITOPENIA, ANEMIA, DOLOR_OSEO, OSTEOPENIA),
     },
     "ASMD": {
-        "cardinal": HEPATOESPLENOMEGALIA,
+        "cardinales": (HEPATOESPLENOMEGALIA,),
         "secundarios": (ENFERMEDAD_PULMONAR_INTERSTICIAL, TROMBOCITOPENIA, HIPERLIPIDEMIA, BAJA_ESTATURA),
     },
 }
@@ -65,7 +65,7 @@ OTROS_SINTOMAS = (
 )
 
 SINTOMAS = tuple(
-    {s.snomed_code: s for p in SINTOMAS_POR_PATOLOGIA.values() for s in (p["cardinal"], *p["secundarios"])}.values()
+    {s.snomed_code: s for p in SINTOMAS_POR_PATOLOGIA.values() for s in (*p["cardinales"], *p["secundarios"])}.values()
 ) + OTROS_SINTOMAS
 
 

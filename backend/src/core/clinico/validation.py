@@ -27,32 +27,37 @@ def _sintoma(valor, campo: str, problemas: list[dict]) -> dict | None:
     return {"snomed_code": codigo, "termino": termino}
 
 
-def _sintomas(datos: dict, problemas: list[dict]) -> tuple[dict | None, list[dict]]:
-    """Exactamente un cardinal y al menos un secundario, sin repetidos ni el cardinal entre los secundarios."""
-    cardinal = None
-    if datos.get("cardinal") is None:
-        problemas.append({"campo": "cardinal", "problema": "es obligatorio"})
-    else:
-        cardinal = _sintoma(datos["cardinal"], "cardinal", problemas)
-
-    secundarios_crudos = datos.get("secundarios")
-    if not isinstance(secundarios_crudos, list) or not secundarios_crudos:
-        problemas.append({"campo": "secundarios", "problema": "tiene que haber al menos un síntoma secundario"})
-        return cardinal, []
-
-    secundarios, vistos = [], set()
-    for i, valor in enumerate(secundarios_crudos):
-        sintoma = _sintoma(valor, f"secundarios[{i}]", problemas)
+def _lista_de_sintomas(datos: dict, campo: str, minimo: str, problemas: list[dict],
+                       excluidos: set[str] = frozenset()) -> list[dict]:
+    """Los síntomas válidos de `datos[campo]`, sin repetidos ni códigos de `excluidos`.
+    `minimo` es el problema que se anota si la lista falta o está vacía."""
+    crudos = datos.get(campo)
+    if not isinstance(crudos, list) or not crudos:
+        problemas.append({"campo": campo, "problema": minimo})
+        return []
+    sintomas, vistos = [], set()
+    for i, valor in enumerate(crudos):
+        sintoma = _sintoma(valor, f"{campo}[{i}]", problemas)
         if sintoma is None:
             continue
-        if cardinal and sintoma["snomed_code"] == cardinal["snomed_code"]:
-            problemas.append({"campo": f"secundarios[{i}]", "problema": "el síntoma cardinal no puede ser también secundario"})
+        if sintoma["snomed_code"] in excluidos:
+            problemas.append({"campo": f"{campo}[{i}]", "problema": "un síntoma cardinal no puede ser también secundario"})
         elif sintoma["snomed_code"] in vistos:
-            problemas.append({"campo": f"secundarios[{i}]", "problema": "el síntoma está repetido"})
+            problemas.append({"campo": f"{campo}[{i}]", "problema": "el síntoma está repetido"})
         else:
             vistos.add(sintoma["snomed_code"])
-            secundarios.append(sintoma)
-    return cardinal, secundarios
+            sintomas.append(sintoma)
+    return sintomas
+
+
+def _sintomas(datos: dict, problemas: list[dict]) -> tuple[list[dict], list[dict]]:
+    """Al menos un cardinal y al menos un secundario, sin repetidos ni cardinales entre los secundarios."""
+    cardinales = _lista_de_sintomas(datos, "cardinales", "tiene que haber al menos un síntoma cardinal", problemas)
+    secundarios = _lista_de_sintomas(
+        datos, "secundarios", "tiene que haber al menos un síntoma secundario", problemas,
+        excluidos={c["snomed_code"] for c in cardinales},
+    )
+    return cardinales, secundarios
 
 
 def _cuerpo(datos) -> dict:
@@ -61,7 +66,7 @@ def _cuerpo(datos) -> dict:
     return datos
 
 
-def validar_alta_patologia(datos) -> tuple[str, dict, list[dict]]:
+def validar_alta_patologia(datos) -> tuple[str, list[dict], list[dict]]:
     datos = _cuerpo(datos)
     problemas = []
     nombre = datos.get("nombre")
@@ -70,10 +75,10 @@ def validar_alta_patologia(datos) -> tuple[str, dict, list[dict]]:
         problemas.append({"campo": "nombre", "problema": "es obligatorio"})
     elif len(nombre) > NOMBRE_MAX:
         problemas.append({"campo": "nombre", "problema": f"admite como máximo {NOMBRE_MAX} caracteres"})
-    cardinal, secundarios = _sintomas(datos, problemas)
+    cardinales, secundarios = _sintomas(datos, problemas)
     if problemas:
         raise validation_error(problemas)
-    return nombre, cardinal, secundarios
+    return nombre, cardinales, secundarios
 
 
 def validar_pedido_diagnostico(datos) -> tuple[list[str], list[str]]:
@@ -99,13 +104,13 @@ def validar_pedido_diagnostico(datos) -> tuple[list[str], list[str]]:
     return list(dict.fromkeys(ids)), list(dict.fromkeys(c.strip() for c in codigos))
 
 
-def validar_modificacion_patologia(datos) -> tuple[dict, list[dict]]:
+def validar_modificacion_patologia(datos) -> tuple[list[dict], list[dict]]:
     """Al modificar solo cambian los síntomas: el nombre queda fijo (Bioinformática busca los genes por nombre)."""
     datos = _cuerpo(datos)
     problemas = []
     if "nombre" in datos:
         problemas.append({"campo": "nombre", "problema": "no se puede modificar"})
-    cardinal, secundarios = _sintomas(datos, problemas)
+    cardinales, secundarios = _sintomas(datos, problemas)
     if problemas:
         raise validation_error(problemas)
-    return cardinal, secundarios
+    return cardinales, secundarios

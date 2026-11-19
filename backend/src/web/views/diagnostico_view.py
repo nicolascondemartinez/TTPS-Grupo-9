@@ -8,6 +8,7 @@ def resultado_diagnostico_view(resultado) -> dict:
         "valido": resultado.valido,
         "motivo": resultado.motivo,
         "cardinal_presente": resultado.cardinal_presente,
+        "cardinales_presentes": list(resultado.cardinales_presentes),
         "secundarios_presentes": list(resultado.secundarios_presentes),
     }
 

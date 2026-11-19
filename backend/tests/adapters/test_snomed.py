@@ -52,17 +52,17 @@ def test_sin_resultados(snomed):
     assert snomed.buscar_sintomas("xyz") == []
 
 
-def test_cada_patologia_del_seed_tiene_un_cardinal_y_secundarios():
+def test_cada_patologia_del_seed_tiene_cardinales_y_secundarios():
     assert set(SINTOMAS_POR_PATOLOGIA) == set(PATOLOGIAS)
     for definicion in SINTOMAS_POR_PATOLOGIA.values():
-        assert isinstance(definicion["cardinal"], SintomaSnomed)
+        assert definicion["cardinales"] and all(isinstance(c, SintomaSnomed) for c in definicion["cardinales"])
         assert len(definicion["secundarios"]) >= 3
-        assert definicion["cardinal"] not in definicion["secundarios"]
+        assert not set(definicion["cardinales"]) & set(definicion["secundarios"])
 
 
 def test_todos_los_sintomas_de_las_patologias_se_encuentran_buscando(snomed):
     for definicion in SINTOMAS_POR_PATOLOGIA.values():
-        for sintoma in (definicion["cardinal"], *definicion["secundarios"]):
+        for sintoma in (*definicion["cardinales"], *definicion["secundarios"]):
             assert sintoma in snomed.buscar_sintomas(sintoma.termino), sintoma
 
 

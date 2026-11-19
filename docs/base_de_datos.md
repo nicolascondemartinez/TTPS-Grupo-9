@@ -44,7 +44,7 @@ usá la conexión directa o el session pooler (5432).
 3. `configuracion` guarda `cdss_estrategia` (módulo 4), sembrada con `mayor_cantidad_sintomas`.
 4. `lote.token_retiro`: UUID que va en la URL que invoca FedEx (no se expone el id interno).
 5. `parada_estudio` relaciona estudios con paradas: permite mostrar qué transportista lleva una muestra.
-6. `patologia_sintoma`: un solo síntoma cardinal por patología (índice único parcial).
+6. `patologia_sintoma`: una patología puede tener uno o más síntomas cardinales (`es_cardinal`), y un mismo síntoma puede ser cardinal de varias patologías.
 7. `cobertura` no tiene estado propio: autorizada/rechazada se deduce del estado del estudio y su historial.
 8. `paciente.familiograma_url` es opcional (el cliente dijo que puede quedar vacío).
 

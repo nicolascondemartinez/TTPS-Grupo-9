@@ -47,23 +47,23 @@ def sintoma_en_cache(session: Session, snomed_code: str, termino: str) -> Sintom
     return sintoma
 
 
-def asignar_sintomas(session: Session, patologia: Patologia, cardinal: dict, secundarios: list[dict]) -> None:
-    """Reemplaza los síntomas de la patología: un cardinal y los secundarios (ya validados). No hace commit."""
+def asignar_sintomas(session: Session, patologia: Patologia, cardinales: list[dict], secundarios: list[dict]) -> None:
+    """Reemplaza los síntomas de la patología: los cardinales y los secundarios (ya validados). No hace commit."""
     if patologia.sintomas:
         patologia.sintomas.clear()
-        session.flush()  # borra los anteriores antes de insertar (mismas PK y un solo cardinal)
-    for datos, es_cardinal in [(cardinal, True), *((s, False) for s in secundarios)]:
+        session.flush()  # borra los anteriores antes de insertar (mismas PK)
+    for datos, es_cardinal in [*((c, True) for c in cardinales), *((s, False) for s in secundarios)]:
         sintoma = sintoma_en_cache(session, datos["snomed_code"], datos["termino"])
         patologia.sintomas.append(PatologiaSintoma(sintoma=sintoma, es_cardinal=es_cardinal))
 
 
-def crear_patologia(session: Session, nombre: str, cardinal: dict, secundarios: list[dict]) -> Patologia:
+def crear_patologia(session: Session, nombre: str, cardinales: list[dict], secundarios: list[dict]) -> Patologia:
     if session.scalar(select(Patologia.id).where(func.lower(Patologia.nombre) == nombre.lower())) is not None:
         raise ApiError(409, "PATOLOGIA_DUPLICADA", "Ya existe una patología con ese nombre", {"campo": "nombre"})
     patologia = Patologia(nombre=nombre)
     session.add(patologia)
     session.flush()
-    asignar_sintomas(session, patologia, cardinal, secundarios)
+    asignar_sintomas(session, patologia, cardinales, secundarios)
     session.commit()
     return obtener_patologia(session, str(patologia.id))
 
@@ -75,8 +75,8 @@ def validar_diagnostico_presuntivo(session: Session, patologia_ids: list[str], c
     return validar_diagnosticos(patologias, codigos_del_paciente)
 
 
-def modificar_patologia(session: Session, patologia_id: str, cardinal: dict, secundarios: list[dict]) -> Patologia:
+def modificar_patologia(session: Session, patologia_id: str, cardinales: list[dict], secundarios: list[dict]) -> Patologia:
     patologia = obtener_patologia(session, patologia_id)
-    asignar_sintomas(session, patologia, cardinal, secundarios)
+    asignar_sintomas(session, patologia, cardinales, secundarios)
     session.commit()
     return obtener_patologia(session, patologia_id)

@@ -1,8 +1,8 @@
 """Validación del diagnóstico presuntivo (escenarios "Validar el diagnóstico presuntivo" e "Impedir el alta
 por diagnóstico inconsistente").
 
-El diagnóstico es válido si el paciente tiene el síntoma cardinal de la patología sospechada o al menos
-MINIMO_SECUNDARIOS de sus síntomas secundarios. Se compara por código SNOMED. Con varias patologías
+El diagnóstico es válido si el paciente tiene alguno de los síntomas cardinales de la patología sospechada
+(puede tener varios) o al menos MINIMO_SECUNDARIOS de sus síntomas secundarios. Se compara por código SNOMED. Con varias patologías
 sospechadas se valida cada una por separado.
 
 Es una regla pura (no consulta la base ni APIs): recibe la patología con sus síntomas ya cargados.
@@ -20,16 +20,24 @@ class ResultadoDiagnostico:
     patologia: str  # nombre
     valido: bool
     motivo: str  # texto para mostrarle al médico
-    cardinal_presente: bool
+    cardinal_presente: bool  # True si tiene al menos uno de los cardinales
+    cardinales_presentes: tuple[str, ...]  # términos de los cardinales que tiene el paciente
     secundarios_presentes: tuple[str, ...]  # términos de los secundarios que tiene el paciente
 
 
-def _motivo(nombre: str, termino_cardinal: str | None, cardinal_presente: bool, secundarios: list[str]) -> str:
-    if cardinal_presente:
-        return f"El paciente presenta el síntoma cardinal de {nombre} ({termino_cardinal})."
+def _motivo(nombre: str, cardinales: list[str], cardinales_presentes: list[str], secundarios: list[str]) -> str:
+    if len(cardinales_presentes) == 1:
+        return f"El paciente presenta el síntoma cardinal de {nombre} ({cardinales_presentes[0]})."
+    if cardinales_presentes:
+        return f"El paciente presenta los síntomas cardinales de {nombre}: {', '.join(cardinales_presentes)}."
     if len(secundarios) >= MINIMO_SECUNDARIOS:
         return f"El paciente presenta {len(secundarios)} síntomas secundarios de {nombre}: {', '.join(secundarios)}."
-    cardinal = f"el síntoma cardinal ({termino_cardinal})" if termino_cardinal else "el síntoma cardinal"
+    if len(cardinales) == 1:
+        cardinal = f"el síntoma cardinal ({cardinales[0]})"
+    elif cardinales:
+        cardinal = f"ninguno de los síntomas cardinales ({', '.join(cardinales)})"
+    else:
+        cardinal = "el síntoma cardinal"
     inicio = f"El diagnóstico de {nombre} no es consistente: el paciente no presenta {cardinal}"
     if not secundarios:
         return f"{inicio} ni ningún síntoma secundario (se necesitan al menos {MINIMO_SECUNDARIOS})."
@@ -40,18 +48,21 @@ def validar_diagnostico(patologia, codigos_del_paciente: Iterable[str]) -> Resul
     """`patologia` es un modelo Patologia con `sintomas` (PatologiaSintoma) cargados;
     `codigos_del_paciente`, los códigos SNOMED de los síntomas del paciente."""
     codigos = set(codigos_del_paciente)
-    cardinal = next((ps.sintoma for ps in patologia.sintomas if ps.es_cardinal), None)
-    cardinal_presente = cardinal is not None and cardinal.snomed_code in codigos
+    cardinales = sorted(ps.sintoma.termino for ps in patologia.sintomas if ps.es_cardinal)
+    cardinales_presentes = sorted(
+        ps.sintoma.termino for ps in patologia.sintomas if ps.es_cardinal and ps.sintoma.snomed_code in codigos
+    )
     secundarios = sorted(
         ps.sintoma.termino for ps in patologia.sintomas if not ps.es_cardinal and ps.sintoma.snomed_code in codigos
     )
-    valido = cardinal_presente or len(secundarios) >= MINIMO_SECUNDARIOS
+    valido = bool(cardinales_presentes) or len(secundarios) >= MINIMO_SECUNDARIOS
     return ResultadoDiagnostico(
         patologia_id=str(patologia.id) if patologia.id else None,
         patologia=patologia.nombre,
         valido=valido,
-        motivo=_motivo(patologia.nombre, cardinal.termino if cardinal else None, cardinal_presente, secundarios),
-        cardinal_presente=cardinal_presente,
+        motivo=_motivo(patologia.nombre, cardinales, cardinales_presentes, secundarios),
+        cardinal_presente=bool(cardinales_presentes),
+        cardinales_presentes=tuple(cardinales_presentes),
         secundarios_presentes=tuple(secundarios),
     )
 

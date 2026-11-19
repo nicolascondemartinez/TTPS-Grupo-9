@@ -1,4 +1,4 @@
-"""Síntoma cardinal y secundarios de las 5 patologías iniciales (las crea seed_catalogos).
+"""Síntomas cardinales y secundarios de las 5 patologías iniciales (las crea seed_catalogos).
 
     poetry run flask --app main:create_app seed-db
 
@@ -25,7 +25,7 @@ def cargar_sintomas_de_patologias(session) -> int:
             continue
         asignar_sintomas(
             session, patologia,
-            asdict(definicion["cardinal"]),
+            [asdict(s) for s in definicion["cardinales"]],
             [asdict(s) for s in definicion["secundarios"]],
         )
         completadas += 1
