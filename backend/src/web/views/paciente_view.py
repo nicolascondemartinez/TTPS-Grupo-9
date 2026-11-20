@@ -11,6 +11,7 @@ def paciente_resumen_view(paciente) -> dict:
         "tipo_sospecha": paciente.tipo_sospecha.value,
         "patologias": sorted(p.nombre for p in paciente.diagnostico_presuntivo),
         "tiene_familiograma": paciente.familiograma_url is not None,
+        "primer_ingreso_pendiente": paciente.usuario.debe_cambiar_password,
         "fecha_alta": paciente.created_at.isoformat() if paciente.created_at else None,
     }
 

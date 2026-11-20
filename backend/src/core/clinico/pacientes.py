@@ -6,10 +6,10 @@ El alta es una sola transacción: si algo falla, no queda un paciente a medias. 
 3. Diagnóstico presuntivo: sospecha clínica con la regla de #10 (cada patología), familiar con la regla de
    familiares (alguna patología diagnosticada en un familiar). Si no es consistente, 409 con el motivo.
 4. Familiograma (si hay familiares y no se pidió seguir sin él): se genera antes de escribir nada.
-5. Usuario (rol paciente, cambio de contraseña obligatorio), paciente, síntomas, patologías, familiares y
-   familiograma; commit.
+5. Usuario (rol paciente, contraseña temporal y cambio obligatorio), paciente, síntomas, patologías, familiares
+   y familiograma; commit.
+6. Mail con las credenciales (después del commit: si falla, el alta no se pierde y se puede reenviar).
 """
-import secrets
 from dataclasses import asdict
 from datetime import date
 
@@ -17,8 +17,9 @@ from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, selectinload
 
-from src.core.auth.password import hash_contrasena
+from src.core.avisos.mail_service import MailSender
 from src.core.clinico import familiares as familiares_service
+from src.core.clinico.credenciales import asignar_contrasena_temporal, enviar_credenciales
 from src.core.clinico.acceso import filtro_pacientes_visibles
 from src.core.clinico.diagnostico import validar_diagnosticos, validar_sospecha_familiar
 from src.core.clinico.service import obtener_patologia, sintoma_en_cache
@@ -51,7 +52,9 @@ def _validar_diagnostico(datos: dict, patologias, familiares) -> None:
         })
 
 
-def dar_de_alta(session: Session, datos: dict, medico: Usuario, hoy: date | None = None) -> Paciente:
+def dar_de_alta(session: Session, datos: dict, medico: Usuario, mail: MailSender, url_ingreso: str,
+                hoy: date | None = None) -> tuple[Paciente, bool]:
+    """Devuelve el paciente y si salió el mail con las credenciales."""
     hoy = hoy or date.today()
     if session.get(Medico, medico.id) is None:
         raise ApiError(409, "SIN_PERFIL_MEDICO", "Tu usuario no tiene perfil de médico (matrícula): pedí que lo carguen")
@@ -72,10 +75,9 @@ def dar_de_alta(session: Session, datos: dict, medico: Usuario, hoy: date | None
     try:
         usuario = Usuario(
             email=datos["email"], nombre=datos["nombre"], apellido=datos["apellido"], telefono=datos["telefono"],
-            rol=RolUsuario.paciente, debe_cambiar_password=True,
-            # Contraseña al azar que nadie conoce hasta que se le envíen las credenciales (#15).
-            password_hash=hash_contrasena(secrets.token_urlsafe(32)),
+            rol=RolUsuario.paciente,
         )
+        contrasena = asignar_contrasena_temporal(usuario)
         session.add(usuario)
         session.flush()
         paciente = Paciente(
@@ -97,7 +99,7 @@ def dar_de_alta(session: Session, datos: dict, medico: Usuario, hoy: date | None
     except Exception:
         session.rollback()
         raise
-    return paciente
+    return paciente, enviar_credenciales(paciente, contrasena, mail, url_ingreso, hoy)
 
 
 def listar_pacientes(session: Session, usuario: Usuario) -> list[Paciente]:

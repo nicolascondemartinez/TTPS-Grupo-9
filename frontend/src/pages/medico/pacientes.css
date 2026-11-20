@@ -1,6 +1,7 @@
 /* Médico tratante: listado de pacientes y alta. */
 .pacientes__error { margin: 0; font-size: 14px; color: #9f1239; }
 .pacientes__suave { font-size: 14px; color: var(--texto-suave); }
+.pacientes__acceso { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
 
 .alta-paciente { display: flex; flex-direction: column; gap: 20px; max-width: 760px; }
 .alta-paciente__grilla { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }

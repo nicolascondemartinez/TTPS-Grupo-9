@@ -26,6 +26,16 @@ export default function Pacientes() {
       .catch((e) => { setError(mensajeDeError(e)); setEstado('error') })
   }, [])
 
+  async function reenviarCredenciales(p) {
+    try {
+      const { credenciales_enviadas: enviado } = await api.post(`/pacientes/${p.id}/credenciales`)
+      if (enviado) notificar(`Le reenviamos el usuario y una contraseña nueva a ${p.nombre} ${p.apellido}.`)
+      else notificar('No pudimos enviar el mail. Intentá de nuevo en unos minutos.', 'error')
+    } catch (e) {
+      notificar(mensajeDeError(e), 'error')
+    }
+  }
+
   async function descargarFamiliograma(p) {
     try {
       await api.descargar(`/pacientes/${p.id}/familiograma`, `familiograma-${p.apellido}-${p.dni}.svg`)
@@ -40,6 +50,18 @@ export default function Pacientes() {
     { clave: 'patologias', titulo: 'Diagnóstico presuntivo', render: (p) => p.patologias.join(', ') },
     { clave: 'tipo_sospecha', titulo: 'Sospecha', render: (p) => SOSPECHA[p.tipo_sospecha] },
     { clave: 'fecha_alta', titulo: 'Alta', render: (p) => fecha(p.fecha_alta) },
+    {
+      clave: 'acceso',
+      titulo: 'Acceso',
+      render: (p) => (p.primer_ingreso_pendiente ? (
+        <div className="pacientes__acceso">
+          <span className="pacientes__suave">Pendiente de primer ingreso</span>
+          <Boton variante="ghost" onClick={() => reenviarCredenciales(p)} aria-label={`Reenviar el usuario y la contraseña a ${p.nombre} ${p.apellido}`}>
+            Reenviar credenciales
+          </Boton>
+        </div>
+      ) : <span className="pacientes__suave">Ya ingresó</span>),
+    },
     {
       clave: 'familiograma',
       titulo: 'Familiograma',

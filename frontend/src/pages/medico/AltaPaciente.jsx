@@ -89,7 +89,11 @@ export default function AltaPaciente() {
     setFamiliogramaCaido(false)
     try {
       const paciente = await api.post('/pacientes', { ...datos, sin_familiograma: sinFamiliograma })
-      notificar(`${paciente.nombre} ${paciente.apellido} quedó dado de alta`)
+      if (paciente.credenciales_enviadas) {
+        notificar(`${paciente.nombre} ${paciente.apellido} quedó dado de alta. Le enviamos el usuario y la contraseña a ${datos.email.trim()}.`)
+      } else {
+        notificar(`${paciente.nombre} ${paciente.apellido} quedó dado de alta, pero no pudimos enviar el mail con su acceso. Podés reenviarlo desde Pacientes.`, 'error')
+      }
       navigate(LISTADO)
     } catch (e) {
       const codigo = codigoDeError(e)
