@@ -1,9 +1,11 @@
 """Validación de las entradas de patologías: devuelve los datos limpios o lanza un 400 con el detalle de
 cada campo (mismo formato que la validación de autenticación)."""
 import re
+from datetime import date
 
-from src.core.common.errors import validation_error
-from src.core.common.validation import validar_uuid
+from src.core.common.errors import ApiError, validation_error
+from src.core.common.validation import _EMAIL_RE, validar_uuid
+from src.core.enums import TipoSospecha
 
 NOMBRE_MAX = 100
 TERMINO_MAX = 255
@@ -166,3 +168,116 @@ def validar_familiares(datos) -> list[dict]:
     if problemas:
         raise validation_error(problemas)
     return familiares
+
+
+# ---------- Alta del paciente ----------
+
+NOMBRE_PERSONA_MAX = 100
+TELEFONO_MAX = 30
+EMAIL_MAX = 254
+HISTORIA_CLINICA_MAX = 20000
+_DNI_RE = re.compile(r"^\d{7,8}$")  # DNI argentino
+_TELEFONO_RE = re.compile(r"^\+?[\d\s()-]{6,30}$")
+EDAD_MAXIMA = 120
+
+
+def _texto(datos: dict, campo: str, maximo: int, problemas: list[dict], obligatorio_msg: str = "es obligatorio") -> str:
+    valor = datos.get(campo)
+    valor = " ".join(valor.split()) if isinstance(valor, str) else ""
+    if not valor:
+        problemas.append({"campo": campo, "problema": obligatorio_msg})
+    elif len(valor) > maximo:
+        problemas.append({"campo": campo, "problema": f"admite como máximo {maximo} caracteres"})
+    return valor
+
+
+def validar_alta_paciente(datos, hoy: date) -> dict:
+    """Datos del formulario de alta -> datos limpios. Todo es obligatorio salvo los familiares; los síntomas son
+    obligatorios solo con sospecha clínica (con sospecha familiar el paciente puede no tener síntomas todavía)."""
+    datos = _cuerpo(datos)
+    problemas: list[dict] = []
+    limpio = {
+        "nombre": _texto(datos, "nombre", NOMBRE_PERSONA_MAX, problemas),
+        "apellido": _texto(datos, "apellido", NOMBRE_PERSONA_MAX, problemas),
+    }
+
+    dni = datos.get("dni")
+    dni = re.sub(r"[.\s-]", "", dni) if isinstance(dni, str) else ""
+    if not dni:
+        problemas.append({"campo": "dni", "problema": "es obligatorio"})
+    elif not _DNI_RE.match(dni):
+        problemas.append({"campo": "dni", "problema": "tiene que tener 7 u 8 números"})
+    limpio["dni"] = dni
+
+    fecha = datos.get("fecha_nacimiento")
+    try:
+        fecha = date.fromisoformat(fecha) if isinstance(fecha, str) else None
+    except ValueError:
+        fecha = None
+    if fecha is None:
+        problemas.append({"campo": "fecha_nacimiento", "problema": "es obligatoria (AAAA-MM-DD)"})
+    elif fecha > hoy:
+        problemas.append({"campo": "fecha_nacimiento", "problema": "no puede ser posterior a hoy"})
+    elif fecha.year < hoy.year - EDAD_MAXIMA:
+        problemas.append({"campo": "fecha_nacimiento", "problema": "no es válida"})
+    limpio["fecha_nacimiento"] = fecha
+
+    telefono = _texto(datos, "telefono", TELEFONO_MAX, problemas)
+    if telefono and not _TELEFONO_RE.match(telefono):
+        problemas.append({"campo": "telefono", "problema": "no es un teléfono válido"})
+    limpio["telefono"] = telefono
+
+    email = datos.get("email")
+    email = email.strip().lower() if isinstance(email, str) else ""
+    if not email:
+        problemas.append({"campo": "email", "problema": "es obligatorio"})
+    elif len(email) > EMAIL_MAX or not _EMAIL_RE.match(email):
+        problemas.append({"campo": "email", "problema": "no tiene un formato de correo válido"})
+    limpio["email"] = email
+
+    tipo = datos.get("tipo_sospecha")
+    if tipo not in {t.value for t in TipoSospecha}:
+        problemas.append({"campo": "tipo_sospecha", "problema": "elegí sospecha clínica o familiar"})
+        tipo = None
+    limpio["tipo_sospecha"] = TipoSospecha(tipo) if tipo else None
+
+    ids = datos.get("patologia_ids")
+    if not isinstance(ids, list) or not ids:
+        problemas.append({"campo": "patologia_ids", "problema": "elegí al menos una patología sospechada"})
+        ids = []
+    elif not all(isinstance(i, str) and validar_uuid(i) for i in ids):
+        problemas.append({"campo": "patologia_ids", "problema": "hay una patología que no es válida"})
+    limpio["patologia_ids"] = list(dict.fromkeys(i for i in ids if isinstance(i, str)))
+
+    sintomas_crudos = datos.get("sintomas") or []
+    sintomas, vistos = [], set()
+    if not isinstance(sintomas_crudos, list):
+        problemas.append({"campo": "sintomas", "problema": "debe ser una lista de síntomas de SNOMED"})
+        sintomas_crudos = []
+    for i, valor in enumerate(sintomas_crudos):
+        sintoma = _sintoma(valor, f"sintomas[{i}]", problemas)
+        if sintoma and sintoma["snomed_code"] not in vistos:
+            vistos.add(sintoma["snomed_code"])
+            sintomas.append(sintoma)
+    if not sintomas_crudos and tipo == TipoSospecha.clinica.value:
+        problemas.append({"campo": "sintomas", "problema": "con sospecha clínica, elegí al menos un síntoma"})
+    limpio["sintomas"] = sintomas
+
+    historia = datos.get("historia_clinica")
+    historia = historia.strip() if isinstance(historia, str) else ""
+    if not historia:
+        problemas.append({"campo": "historia_clinica", "problema": "es obligatorio: grabalo o escribilo"})
+    elif len(historia) > HISTORIA_CLINICA_MAX:
+        problemas.append({"campo": "historia_clinica", "problema": f"admite como máximo {HISTORIA_CLINICA_MAX} caracteres"})
+    limpio["historia_clinica"] = historia
+
+    try:
+        limpio["familiares"] = validar_familiares(datos.get("familiares"))
+    except ApiError as e:
+        problemas.extend(e.detalle.get("campos", []))
+        limpio["familiares"] = []
+    limpio["sin_familiograma"] = datos.get("sin_familiograma") is True
+
+    if problemas:
+        raise validation_error(problemas)
+    return limpio

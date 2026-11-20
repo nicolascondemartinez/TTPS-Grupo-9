@@ -1,0 +1,36 @@
+/* Médico tratante: listado de pacientes y alta. */
+.pacientes__error { margin: 0; font-size: 14px; color: #9f1239; }
+.pacientes__suave { font-size: 14px; color: var(--texto-suave); }
+
+.alta-paciente { display: flex; flex-direction: column; gap: 20px; max-width: 760px; }
+.alta-paciente__grilla { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.alta-paciente__opciones { border: 0; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px; }
+.alta-paciente__opciones legend { width: 100%; margin-bottom: 6px; }
+.alta-paciente__opciones > span { flex-basis: 100%; }
+.alta-paciente__opcion {
+  display: flex; align-items: flex-start; gap: 10px; flex: 1 1 220px; cursor: pointer;
+  padding: 12px 14px; border: 1px solid var(--borde-campo); border-radius: var(--radio-campo); background: var(--blanco);
+}
+.alta-paciente__opcion--chica { flex: 0 1 auto; align-items: center; padding: 10px 14px; }
+.alta-paciente__opcion:has(input:checked) { border-color: var(--violeta-600, #6d28d9); box-shadow: var(--sombra-foco); }
+.alta-paciente__opcion input { width: 18px; height: 18px; margin: 2px 0 0; accent-color: #6d28d9; flex-shrink: 0; }
+.alta-paciente__opcion > span { display: flex; flex-direction: column; gap: 2px; }
+.alta-paciente__ayuda { font-size: 13px; color: var(--texto-suave); }
+.alta-paciente__diagnostico {
+  padding: 12px 14px; border: 1px solid #fecdd3; border-radius: var(--radio-campo); background: #fff1f2; font-size: 14px;
+}
+.alta-paciente__diagnostico ul { margin: 6px 0 0; padding-left: 18px; }
+.alta-paciente__invalido { color: #9f1239; }
+.alta-paciente__acciones { display: flex; justify-content: flex-end; gap: 12px; }
+.alta-paciente__familiograma {
+  display: flex; flex-direction: column; gap: 8px; padding: 14px 16px;
+  border: 1px solid #fed7aa; border-radius: var(--radio-campo); background: #fff7ed; font-size: 14px;
+}
+.alta-paciente__familiograma p { margin: 0; }
+
+/* Celular: una columna y botones a todo el ancho */
+@media (max-width: 820px) {
+  .alta-paciente__grilla { grid-template-columns: 1fr; }
+  .alta-paciente__acciones { flex-direction: column-reverse; }
+  .alta-paciente__acciones .btn { width: 100%; min-height: 44px; }
+}

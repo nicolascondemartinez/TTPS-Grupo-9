@@ -26,3 +26,11 @@ def es_menor_de_meses(fecha_nacimiento: date, meses: int, al_dia: date) -> bool:
 def es_menor_de_4_meses(fecha_nacimiento: date, al_dia: date) -> bool:
     """Para el Pompe urgente: menor de 4 meses de calendario al `al_dia` (normalmente, el día del alta)."""
     return es_menor_de_meses(fecha_nacimiento, MESES_POMPE_URGENTE, al_dia)
+
+
+MAYORIA_DE_EDAD = 18
+
+
+def es_menor_de_edad(fecha_nacimiento: date, al_dia: date) -> bool:
+    """Menor de 18 años al `al_dia`: el mail de contacto es el del padre, la madre o el tutor."""
+    return es_menor_de_meses(fecha_nacimiento, MAYORIA_DE_EDAD * 12, al_dia)

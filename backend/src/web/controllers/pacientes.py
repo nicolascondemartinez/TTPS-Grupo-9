@@ -1,12 +1,33 @@
-"""Pacientes: catálogo de parentescos para cargar familiares y descarga del familiograma.
-El alta del paciente (#14) se suma acá."""
-from flask import Blueprint, Response, g
+"""Pacientes: alta y listado del médico, catálogo de parentescos y descarga del familiograma."""
+from datetime import date
+
+from flask import Blueprint, Response, g, request
 
 from src.core.clinico import familiares as familiares_service
+from src.core.clinico import pacientes as pacientes_service
+from src.core.clinico.validation import validar_alta_paciente
 from src.core.database import get_db
 from src.web.security import require_auth, require_permission
+from src.web.views.paciente_view import paciente_resumen_view, pacientes_view
 
 bp = Blueprint("pacientes", __name__)
+
+
+@bp.post("/pacientes")
+@require_permission("paciente_crear")
+def alta():
+    """Alta del paciente por su médico tratante. Errores: 400 por campo, 409 DNI_DUPLICADO, MAIL_EN_USO o
+    DIAGNOSTICO_INCONSISTENTE (con el motivo), 503 FAMILIOGRAMA_NO_DISPONIBLE (reenviar con "sin_familiograma": true)."""
+    datos = validar_alta_paciente(request.get_json(silent=True), date.today())
+    paciente = pacientes_service.dar_de_alta(get_db(), datos, g.usuario)
+    return paciente_resumen_view(paciente), 201
+
+
+@bp.get("/pacientes")
+@require_permission("paciente_listar")
+def listar():
+    """Los pacientes que dio de alta el médico logueado."""
+    return pacientes_view(pacientes_service.listar_pacientes(get_db(), g.usuario))
 
 
 @bp.get("/parentescos")

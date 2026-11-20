@@ -25,3 +25,11 @@ def obtener_paciente_visible(session: Session, paciente_id: str, usuario: Usuari
     if paciente is None or not puede_ver_paciente(usuario, paciente):
         raise ApiError(404, "PACIENTE_NO_ENCONTRADO", "El paciente no existe")
     return paciente
+
+
+def filtro_pacientes_visibles(usuario: Usuario):
+    """Condición SQL con los pacientes que el usuario puede ver (para listados). Misma regla que puede_ver_paciente."""
+    condicion = Paciente.usuario_id == usuario.id
+    if usuario.rol == RolUsuario.medico:
+        condicion = condicion | (Paciente.medico_alta_id == usuario.id)
+    return condicion

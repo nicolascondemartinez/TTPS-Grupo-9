@@ -15,7 +15,7 @@ from datetime import datetime, timedelta, timezone
 from src.core.avisos import service as avisos_service
 from src.core.avisos.models import Aviso
 from src.core.enums import RolUsuario, TipoAviso
-from src.core.models import Usuario
+from src.core.models import Medico, Usuario
 from src.core.database import nueva_sesion
 from src.core.auth.password import hash_contrasena
 
@@ -82,6 +82,16 @@ def _sembrar_avisos(session) -> int:
     return creados
 
 
+MATRICULA_DEMO = "MP-DEMO-0001"  # la misma que usa seed_estudio_demo
+
+
+def _perfil_medico_demo(session) -> None:
+    """El médico demo necesita su perfil (tabla medico, con matrícula) para dar de alta pacientes."""
+    medico = session.scalar(select(Usuario).where(func.lower(Usuario.email) == "medico@exoma.test"))
+    if medico is not None and session.get(Medico, medico.id) is None:
+        session.add(Medico(usuario_id=medico.id, matricula=MATRICULA_DEMO))
+
+
 def run() -> None:
     if os.environ.get("FLASK_ENV") == "production":
         sys.exit("No se crean usuarios de prueba en producción")
@@ -96,6 +106,8 @@ def run() -> None:
                     )
                 )
                 creados += 1
+        session.commit()
+        _perfil_medico_demo(session)
         session.commit()
         avisos = _sembrar_avisos(session)
         session.commit()

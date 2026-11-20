@@ -3,7 +3,7 @@ from datetime import date
 
 import pytest
 
-from src.core.clinico.edad import es_menor_de_4_meses, sumar_meses
+from src.core.clinico.edad import es_menor_de_4_meses, es_menor_de_edad, sumar_meses
 
 
 @pytest.mark.parametrize("fecha, meses, esperado", [
@@ -29,3 +29,8 @@ def test_nacido_un_31_cumple_4_meses_el_ultimo_dia_de_febrero():
     nacimiento = date(2026, 10, 31)
     assert es_menor_de_4_meses(nacimiento, date(2027, 2, 27))
     assert not es_menor_de_4_meses(nacimiento, date(2027, 2, 28))
+
+
+def test_menor_de_edad():
+    assert es_menor_de_edad(date(2008, 11, 20), date(2026, 11, 19))      # cumple 18 mañana
+    assert not es_menor_de_edad(date(2008, 11, 19), date(2026, 11, 19))  # cumple 18 hoy
