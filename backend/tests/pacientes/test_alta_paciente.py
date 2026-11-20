@@ -154,8 +154,8 @@ def test_diagnostico_clinico_inconsistente_no_crea_nada(api, db, medico, alta, i
     assert pacientes_creados(db) == (0, 0)
 
 
-def familiar_con(patologia_id, nombre="Tomás Pérez", parentesco="hermano/a"):
-    return {"parentesco": parentesco, "nombre": nombre, "sintomas": [], "patologia_id": patologia_id}
+def familiar_con(patologia_id, nombre="Raúl Pérez", parentesco="progenitor", sexo="hombre"):
+    return {"parentesco": parentesco, "nombre": nombre, "sexo": sexo, "sintomas": [], "patologia_id": patologia_id}
 
 
 def test_sospecha_familiar_sin_sintomas_con_un_familiar_diagnosticado(api, medico, alta, ids):
@@ -252,3 +252,24 @@ def test_el_medico_ve_solo_sus_pacientes(api, db, crear_usuario, medico, alta):
     mios = api.get("/api/pacientes", medico).get_json()["pacientes"]
     assert [(p["nombre"], p["dni"]) for p in mios] == [("Ana", "45123456")]
     assert [p["nombre"] for p in api.get("/api/pacientes", token_otro).get_json()["pacientes"]] == ["Beto"]
+
+
+# ---------- Familiares: sexo y reglas de vínculos del familiograma ----------
+
+def test_se_guarda_el_sexo_de_cada_familiar(api, db, medico, alta, ids):
+    familiares = [familiar_con(None, "Raúl Pérez", "progenitor", "hombre"),
+                  familiar_con(None, "Luca Pérez", "abuelo/a paterno/a", "hombre")]
+    r = post(api, medico, alta(familiares=familiares))
+    assert r.status_code == 201, r.get_json()
+    db.expire_all()
+    guardados = {f.nombre: f.sexo.value for f in db.get(Paciente, r.get_json()["id"]).familiares}
+    assert guardados == {"Raúl Pérez": "hombre", "Luca Pérez": "hombre"}
+
+
+def test_un_abuelo_sin_saber_el_sexo_del_progenitor_no_se_puede_ubicar(api, db, medico, alta):
+    familiares = [familiar_con(None, "Raúl Pérez", "progenitor", "no_identificado"),
+                  familiar_con(None, "Luca Pérez", "abuelo/a paterno/a", "hombre")]
+    assert campos(post(api, medico, alta(familiares=familiares))) == {
+        "familiares[1].parentesco": '"Luca Pérez" (abuelo/a paterno/a) necesita que haya exactamente un progenitor '
+                                    "de sexo hombre; hay 0."}
+    assert pacientes_creados(db) == (0, 0)

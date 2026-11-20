@@ -10,7 +10,7 @@ from src.core.clinico import familiares as familiares_service
 from src.core.clinico.familiares import FamiliarNuevo
 from src.core.clinico.validation import validar_familiares
 from src.core.common.errors import ApiError
-from src.core.enums import RolUsuario, TipoSospecha
+from src.core.enums import RolUsuario, Sexo, TipoSospecha
 from src.core.models import Medico, Paciente, Patologia
 
 @pytest.fixture(autouse=True)
@@ -40,7 +40,8 @@ def test_sin_familiares_es_valido(datos):
 
 def test_limpia_los_datos():
     [f] = validar_familiares([familiar(nombre="  Laura   Gómez ", sintomas=[TOS, TOS, FIEBRE])])
-    assert f == {"parentesco": "progenitor", "nombre": "Laura Gómez", "sintomas": [TOS, FIEBRE], "patologia_id": None}
+    assert f == {"parentesco": "progenitor", "nombre": "Laura Gómez", "sexo": Sexo.no_identificado,
+                 "sintomas": [TOS, FIEBRE], "patologia_id": None}
 
 
 def test_informa_cada_problema_por_familiar():
@@ -54,6 +55,22 @@ def test_informa_cada_problema_por_familiar():
         "familiares[1].patologia_id": "no es una patología válida",
     }
 
+
+
+def test_no_se_carga_dos_veces_el_mismo_familiar():
+    with pytest.raises(ApiError) as e:
+        validar_familiares([familiar(), familiar(nombre="laura  GOMEZ")])  # mismo nombre y parentesco
+    assert campos(e) == {"familiares[1].nombre": "ya cargaste a este familiar con el mismo parentesco"}
+
+
+def test_el_mismo_nombre_con_otro_parentesco_si_se_acepta():
+    assert len(validar_familiares([familiar(), familiar(parentesco="abuelo/a materno/a")])) == 2
+
+
+def test_sexo_invalido():
+    with pytest.raises(ApiError) as e:
+        validar_familiares([familiar(sexo="otro")])
+    assert campos(e) == {"familiares[0].sexo": "elegí hombre, mujer o no sé"}
 
 def test_familiares_tiene_que_ser_una_lista():
     with pytest.raises(ApiError):

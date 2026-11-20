@@ -12,17 +12,22 @@ import './seccion-familiares.css'
 //   const [familiares, setFamiliares] = useState([])
 //   <SeccionFamiliares valor={familiares} onChange={setFamiliares} errores={erroresFamiliares} />
 //
-// Cada familiar: { parentesco, nombre, sintomas: [{ snomed_code, termino }], patologia_id (null = ninguna) }.
+// Cada familiar: { parentesco, nombre, sexo, sintomas: [{ snomed_code, termino }], patologia_id (null = ninguna) }.
+// El sexo (hombre | mujer | no_identificado) lo usa el familiograma para ubicar a los abuelos, tíos y medio
+// hermanos de cada lado: por eso hay que cargar a los progenitores con su sexo.
 // `errores` (opcional): { 0: 'Ingresá nombre y apellido', ... } por posición, para los errores del backend.
 // El parentesco sale del catálogo del módulo de familiograma (GET /api/parentescos); si no responde, se escribe a mano.
 // No usa <form>: va adentro del formulario del alta, así que Enter no confirma nada acá.
 
-const VACIO = { parentesco: '', nombre: '', sintomas: [], patologia_id: null }
+const VACIO = { parentesco: '', nombre: '', sexo: '', sintomas: [], patologia_id: null }
+const SEXOS = { hombre: 'Hombre', mujer: 'Mujer', no_identificado: 'No sé' }
+const OPCIONES_SEXO = [{ valor: '', texto: 'Elegí el sexo' }, ...Object.entries(SEXOS).map(([valor, texto]) => ({ valor, texto }))]
 
 function problemasDe(f) {
   const problemas = {}
   if (!f.parentesco.trim()) problemas.parentesco = 'Elegí el parentesco.'
   if (f.nombre.trim().split(/\s+/).filter(Boolean).length < 2) problemas.nombre = 'Ingresá nombre y apellido.'
+  if (!f.sexo) problemas.sexo = 'Elegí el sexo (o "No sé").'
   return problemas
 }
 
@@ -46,7 +51,7 @@ export default function SeccionFamiliares({ valor, onChange, errores = {}, desha
 
   function abrir(indice) {
     setProblemas({})
-    setEdicion({ indice, datos: indice === null ? VACIO : valor[indice] })
+    setEdicion({ indice, datos: indice === null ? VACIO : { ...VACIO, ...valor[indice] } })
   }
 
   function cambiar(campo, dato) {
@@ -81,6 +86,10 @@ export default function SeccionFamiliares({ valor, onChange, errores = {}, desha
       {valor.length === 0 && !edicion && (
         <p className="familiares__vacio">No hay familiares cargados. Es opcional: si cargás alguno, se genera el familiograma.</p>
       )}
+      <p className="familiares__vacio">
+        Para ubicar a abuelos, tíos y medio hermanos de un lado, cargá al progenitor de ese lado con su sexo. Los primos
+        necesitan a su tío, los sobrinos a un hermano, los nietos a un hijo y los suegros a la pareja.
+      </p>
 
       {valor.length > 0 && (
         <ul className="familiares__lista" aria-label="Familiares cargados">
@@ -88,7 +97,7 @@ export default function SeccionFamiliares({ valor, onChange, errores = {}, desha
             <li key={i} className="familiares__item">
               <div className="familiares__datos">
                 <strong>{f.nombre}</strong>
-                <span className="familiares__parentesco">{f.parentesco}</span>
+                <span className="familiares__parentesco">{f.parentesco} · {SEXOS[f.sexo] ?? 'Sexo no informado'}</span>
                 <span className="familiares__detalle">
                   Diagnóstico previo: {f.patologia_id ? nombrePatologia(f.patologia_id) : 'ninguno'}
                   {' · '}Síntomas: {f.sintomas.length ? f.sintomas.map((s) => s.termino).join(', ') : 'ninguno'}
@@ -124,6 +133,10 @@ export default function SeccionFamiliares({ valor, onChange, errores = {}, desha
             etiqueta="Nombre y apellido" value={edicion.datos.nombre} maxLength={150} onKeyDown={sinEnter}
             onChange={(e) => cambiar('nombre', e.target.value)} error={problemas.nombre}
             ayuda="El apellido va al final (lo usa el familiograma)."
+          />
+          <Campo
+            etiqueta="Sexo" opciones={OPCIONES_SEXO} value={edicion.datos.sexo}
+            onChange={(e) => cambiar('sexo', e.target.value)} error={problemas.sexo}
           />
           <SelectorSintomas
             etiqueta="Síntomas del familiar" valor={edicion.datos.sintomas} onChange={(s) => cambiar('sintomas', s)}

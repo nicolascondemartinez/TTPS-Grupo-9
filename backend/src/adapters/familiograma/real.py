@@ -10,7 +10,7 @@ from src.adapters.familiograma.interfaz import (ArchivoFamiliograma, FamiliarFam
 from src.core.common.errors import validation_error
 
 PARENTESCO_PACIENTE = 0
-SEXO_DESCONOCIDO = "no_identificado"  # el repo no guarda el sexo
+SEXO_DESCONOCIDO = "no_identificado"  # el paciente no tiene sexo cargado (la API no lo necesita)
 
 
 class FamiliogramaReal:
@@ -32,7 +32,7 @@ class FamiliogramaReal:
         personas = [_persona(PARENTESCO_PACIENTE, paciente.nombre, paciente.apellido, paciente.sintomas,
                              edad=paciente.edad)]
         personas += [_persona(v.parentesco_id, v.nombre, v.apellido, v.familiar.sintomas,
-                              diagnostico=v.familiar.diagnostico_previo) for v in validados]
+                              diagnostico=v.familiar.diagnostico_previo, sexo=v.familiar.sexo) for v in validados]
         try:
             datos = self.http.post("", {"personas": personas})
         except SolicitudRechazada as e:
@@ -47,9 +47,10 @@ class FamiliogramaReal:
             raise RespuestaInvalida(self.http.modulo, {"motivo": "imagen"})
 
 
-def _persona(parentesco: int, nombre: str, apellido: str, sintomas, edad=None, diagnostico=None) -> dict:
+def _persona(parentesco: int, nombre: str, apellido: str, sintomas, edad=None, diagnostico=None,
+             sexo: str = SEXO_DESCONOCIDO) -> dict:
     persona = {
-        "parentesco": parentesco, "nombre": nombre, "apellido": apellido, "sexo": SEXO_DESCONOCIDO,
+        "parentesco": parentesco, "nombre": nombre, "apellido": apellido, "sexo": sexo,
         "sintomas": [{"codigo": s.snomed_code, "nombre": s.termino} for s in sintomas],
     }
     if edad is not None:
@@ -63,9 +64,17 @@ def _persona(parentesco: int, nombre: str, apellido: str, sintomas, edad=None, d
 def _campos_invalidos(cuerpo) -> list[dict]:
     error = cuerpo.get("error", {}) if isinstance(cuerpo, dict) else {}
     detalles = error.get("detalles") or []
-    campos = [{"campo": _campo(d.get("ruta", "")), "problema": d.get("mensaje", "")}
+    campos = [{"campo": _campo(d.get("ruta", "")), "problema": _mensaje_legible(d.get("mensaje", ""))}
               for d in detalles if isinstance(d, dict)]
     return campos or [{"campo": "familiares", "problema": error.get("mensaje", "datos inválidos")}]
+
+
+def _mensaje_legible(mensaje: str) -> str:
+    """Saca el código técnico y los números de parentesco para mostrárselo al médico:
+    'FALTA_PERSONA_DE_REFERENCIA: "Ana" (tío/a materno/a) necesita un abuelo/a materno/a (parentesco 3) en la lista.'
+    -> '"Ana" (tío/a materno/a) necesita un abuelo/a materno/a en la lista.'"""
+    mensaje = re.sub(r"^[A-Z_]+:\s+", "", mensaje)
+    return re.sub(r"\s*\(parentesco \d+\)", "", mensaje)
 
 
 def _campo(ruta: str) -> str:

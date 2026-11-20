@@ -5,7 +5,8 @@ from datetime import date
 
 from src.core.common.errors import ApiError, validation_error
 from src.core.common.validation import _EMAIL_RE, validar_uuid
-from src.core.enums import TipoSospecha
+from src.adapters.snomed.interfaz import normalizar
+from src.core.enums import Sexo, TipoSospecha
 
 NOMBRE_MAX = 100
 TERMINO_MAX = 255
@@ -126,13 +127,15 @@ NOMBRE_FAMILIAR_MAX = 150
 
 def validar_familiares(datos) -> list[dict]:
     """Lista de familiares del alta (puede venir vacía o no venir) -> lista limpia:
-    [{parentesco, nombre, sintomas: [{snomed_code, termino}], patologia_id: str | None}].
-    El nombre tiene que traer nombre y apellido (el familiograma usa la última palabra como apellido)."""
+    [{parentesco, nombre, sexo, sintomas: [{snomed_code, termino}], patologia_id: str | None}].
+    El nombre tiene que traer nombre y apellido (el familiograma usa la última palabra como apellido).
+    El sexo es hombre, mujer o no_identificado (si no viene). No se acepta el mismo familiar dos veces (mismo
+    nombre y parentesco); el mismo nombre con otro parentesco sí (por ejemplo, padre e hijo homónimos)."""
     if datos is None:
         return []
     if not isinstance(datos, list):
         raise validation_error([{"campo": "familiares", "problema": "debe ser una lista"}])
-    problemas, familiares = [], []
+    problemas, familiares, cargados = [], [], set()
     for i, crudo in enumerate(datos):
         campo = f"familiares[{i}]"
         if not isinstance(crudo, dict):
@@ -150,6 +153,14 @@ def validar_familiares(datos) -> list[dict]:
             problemas.append({"campo": f"{campo}.nombre", "problema": "ingresá nombre y apellido del familiar"})
         elif len(nombre) > NOMBRE_FAMILIAR_MAX:
             problemas.append({"campo": f"{campo}.nombre", "problema": f"admite como máximo {NOMBRE_FAMILIAR_MAX} caracteres"})
+        clave = (normalizar(nombre), normalizar(parentesco))
+        if nombre and parentesco and clave in cargados:
+            problemas.append({"campo": f"{campo}.nombre", "problema": "ya cargaste a este familiar con el mismo parentesco"})
+        cargados.add(clave)
+        sexo = crudo.get("sexo") or Sexo.no_identificado.value
+        if sexo not in {s.value for s in Sexo}:
+            problemas.append({"campo": f"{campo}.sexo", "problema": "elegí hombre, mujer o no sé"})
+            sexo = Sexo.no_identificado.value
         sintomas_crudos = crudo.get("sintomas") or []
         sintomas, vistos = [], set()
         if not isinstance(sintomas_crudos, list):
@@ -163,7 +174,7 @@ def validar_familiares(datos) -> list[dict]:
         patologia_id = crudo.get("patologia_id")
         if patologia_id is not None and (not isinstance(patologia_id, str) or not validar_uuid(patologia_id)):
             problemas.append({"campo": f"{campo}.patologia_id", "problema": "no es una patología válida"})
-        familiares.append({"parentesco": parentesco, "nombre": nombre, "sintomas": sintomas,
+        familiares.append({"parentesco": parentesco, "nombre": nombre, "sexo": Sexo(sexo), "sintomas": sintomas,
                            "patologia_id": patologia_id})
     if problemas:
         raise validation_error(problemas)

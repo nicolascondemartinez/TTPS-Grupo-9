@@ -8,7 +8,7 @@ from sqlalchemy import Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.core.database import Base, CreatedAt, UuidPk, pg_enum
-from src.core.enums import TipoSospecha
+from src.core.enums import Sexo, TipoSospecha
 
 
 class Patologia(Base, UuidPk, CreatedAt):
@@ -84,6 +84,9 @@ class Familiar(Base, UuidPk):
     paciente_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("paciente.usuario_id", ondelete="CASCADE"), index=True)
     parentesco: Mapped[str] = mapped_column(String(50))
     nombre: Mapped[str] = mapped_column(String(150))
+    # El módulo de familiograma lo necesita para ubicar abuelos, tíos y medio hermanos de cada lado.
+    sexo: Mapped[Sexo] = mapped_column(pg_enum(Sexo, "sexo"), default=Sexo.no_identificado,
+                                       server_default=Sexo.no_identificado.value)
     patologia_diagnosticada_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("patologia.id", ondelete="RESTRICT"))
 
     paciente: Mapped["Paciente"] = relationship(back_populates="familiares")
