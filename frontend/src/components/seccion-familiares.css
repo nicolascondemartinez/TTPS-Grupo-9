@@ -1,0 +1,25 @@
+/* ---------- Familiares del paciente (alta) ---------- */
+.familiares { display: flex; flex-direction: column; gap: 14px; }
+.familiares__vacio { margin: 0; font-size: 14px; color: var(--texto-suave); }
+.familiares__lista { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.familiares__item {
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
+  padding: 12px 14px; border: 1px solid var(--linea); border-radius: var(--radio-campo); background: var(--blanco);
+}
+.familiares__datos { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.familiares__parentesco { font-size: 14px; color: var(--texto-suave); }
+.familiares__detalle { font-size: 13px; color: var(--texto-suave); overflow-wrap: anywhere; }
+.familiares__acciones { display: flex; gap: 4px; flex-shrink: 0; }
+.familiares__editor {
+  display: flex; flex-direction: column; gap: 14px;
+  padding: 16px; border: 1px dashed var(--borde-campo); border-radius: var(--radio-campo); background: var(--niebla);
+}
+.familiares__botones { display: flex; justify-content: flex-end; gap: 8px; }
+
+/* En celular: los botones ocupan el ancho y quedan fáciles de tocar */
+@media (max-width: 520px) {
+  .familiares__item { flex-direction: column; }
+  .familiares__acciones { align-self: stretch; }
+  .familiares__acciones .btn, .familiares__botones .btn { flex: 1; min-height: 44px; }
+  .familiares__botones { flex-direction: column-reverse; }
+}

@@ -20,6 +20,7 @@ import { ESTADOS_ESTUDIO } from '../constants/estados.js'
 import Mapa from '../components/Mapa.jsx'
 import SelectorSintomas from '../components/SelectorSintomas.jsx'
 import GrabadorHistoriaClinica from '../components/GrabadorHistoriaClinica.jsx'
+import SeccionFamiliares from '../components/SeccionFamiliares.jsx'
 
 // Catálogo de la base de frontend: muestra cada componente y cómo usarlo.
 // Datos de ejemplo solamente.
@@ -66,6 +67,7 @@ export default function Design() {
   const [centroElegido, setCentroElegido] = useState('c2')
   const [sintomas, setSintomas] = useState([])
   const [historia, setHistoria] = useState('')
+  const [familiares, setFamiliares] = useState([])
 
   useEffect(() => {
     api.get('/health').then((d) => setApiEstado(d.status)).catch(() => setApiEstado('sin conexión'))
@@ -217,6 +219,21 @@ export default function Design() {
           <GrabadorHistoriaClinica valor={historia} onChange={setHistoria} />
         </div>
         <p className="tarjeta__subtitulo">Valor: {historia ? `${historia.length} caracteres` : 'vacío'}</p>
+      </Seccion>
+
+      <Seccion
+        etiqueta="12"
+        titulo="Familiares del paciente"
+        codigo={`const [familiares, setFamiliares] = useState([])   // [{ parentesco, nombre, sintomas, patologia_id }]
+<SeccionFamiliares valor={familiares} onChange={setFamiliares} errores={{ 0: 'Ingresá nombre y apellido' }} />
+// Parentescos de GET /api/parentescos (módulo de familiograma) y diagnóstico previo de GET /api/patologias.
+// Opcional: con cero familiares no se genera familiograma. Va adentro del formulario del alta (no usa <form>).
+// Acá, sin haber ingresado como médico, el parentesco se escribe a mano (la API responde con error).`}
+      >
+        <div style={{ maxWidth: 640 }}>
+          <SeccionFamiliares valor={familiares} onChange={setFamiliares} />
+        </div>
+        <p className="tarjeta__subtitulo">Valor: {familiares.length ? familiares.map((f) => `${f.parentesco}: ${f.nombre}`).join(' · ') : 'ninguno'}</p>
       </Seccion>
     </div>
   )

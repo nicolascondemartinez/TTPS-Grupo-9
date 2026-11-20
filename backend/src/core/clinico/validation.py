@@ -114,3 +114,55 @@ def validar_modificacion_patologia(datos) -> tuple[list[dict], list[dict]]:
     if problemas:
         raise validation_error(problemas)
     return cardinales, secundarios
+
+
+# ---------- Familiares del paciente ----------
+
+PARENTESCO_MAX = 50
+NOMBRE_FAMILIAR_MAX = 150
+
+
+def validar_familiares(datos) -> list[dict]:
+    """Lista de familiares del alta (puede venir vacía o no venir) -> lista limpia:
+    [{parentesco, nombre, sintomas: [{snomed_code, termino}], patologia_id: str | None}].
+    El nombre tiene que traer nombre y apellido (el familiograma usa la última palabra como apellido)."""
+    if datos is None:
+        return []
+    if not isinstance(datos, list):
+        raise validation_error([{"campo": "familiares", "problema": "debe ser una lista"}])
+    problemas, familiares = [], []
+    for i, crudo in enumerate(datos):
+        campo = f"familiares[{i}]"
+        if not isinstance(crudo, dict):
+            problemas.append({"campo": campo, "problema": "no es un familiar válido"})
+            continue
+        parentesco = crudo.get("parentesco")
+        parentesco = " ".join(parentesco.split()) if isinstance(parentesco, str) else ""
+        if not parentesco:
+            problemas.append({"campo": f"{campo}.parentesco", "problema": "es obligatorio"})
+        elif len(parentesco) > PARENTESCO_MAX:
+            problemas.append({"campo": f"{campo}.parentesco", "problema": f"admite como máximo {PARENTESCO_MAX} caracteres"})
+        nombre = crudo.get("nombre")
+        nombre = " ".join(nombre.split()) if isinstance(nombre, str) else ""
+        if len(nombre.split()) < 2:
+            problemas.append({"campo": f"{campo}.nombre", "problema": "ingresá nombre y apellido del familiar"})
+        elif len(nombre) > NOMBRE_FAMILIAR_MAX:
+            problemas.append({"campo": f"{campo}.nombre", "problema": f"admite como máximo {NOMBRE_FAMILIAR_MAX} caracteres"})
+        sintomas_crudos = crudo.get("sintomas") or []
+        sintomas, vistos = [], set()
+        if not isinstance(sintomas_crudos, list):
+            problemas.append({"campo": f"{campo}.sintomas", "problema": "debe ser una lista de síntomas de SNOMED"})
+            sintomas_crudos = []
+        for j, valor in enumerate(sintomas_crudos):
+            sintoma = _sintoma(valor, f"{campo}.sintomas[{j}]", problemas)
+            if sintoma and sintoma["snomed_code"] not in vistos:  # repetidos: se ignoran
+                vistos.add(sintoma["snomed_code"])
+                sintomas.append(sintoma)
+        patologia_id = crudo.get("patologia_id")
+        if patologia_id is not None and (not isinstance(patologia_id, str) or not validar_uuid(patologia_id)):
+            problemas.append({"campo": f"{campo}.patologia_id", "problema": "no es una patología válida"})
+        familiares.append({"parentesco": parentesco, "nombre": nombre, "sintomas": sintomas,
+                           "patologia_id": patologia_id})
+    if problemas:
+        raise validation_error(problemas)
+    return familiares

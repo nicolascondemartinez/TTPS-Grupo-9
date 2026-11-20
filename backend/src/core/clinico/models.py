@@ -53,7 +53,7 @@ class Paciente(Base, CreatedAt):
     medico_alta_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("medico.usuario_id", ondelete="RESTRICT"))
     tipo_sospecha: Mapped[TipoSospecha] = mapped_column(pg_enum(TipoSospecha, "tipo_sospecha"))
     historia_clinica: Mapped[str] = mapped_column(Text)  # texto transcripto y confirmado (no se guarda el audio)
-    familiograma_url: Mapped[str | None] = mapped_column(Text)  # PDF del módulo 1 en Storage; opcional
+    familiograma_url: Mapped[str | None] = mapped_column(Text)  # ruta del SVG del módulo 1 (almacenamiento); opcional
 
     usuario: Mapped["Usuario"] = relationship()  # noqa: F821
     sintomas: Mapped[list["Sintoma"]] = relationship(secondary="paciente_sintoma")
