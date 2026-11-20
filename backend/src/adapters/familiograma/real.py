@@ -4,7 +4,6 @@ import binascii
 import re
 
 from src.adapters import HttpClient, RespuestaInvalida, SolicitudRechazada
-from src.adapters.bioinformatica.real import CODIGOS_PATOLOGIA
 from src.adapters.familiograma.interfaz import (ArchivoFamiliograma, FamiliarFamiliograma, PacienteFamiliograma,
                                                 Parentesco, validar_familiares)
 from src.core.common.errors import validation_error
@@ -13,6 +12,17 @@ PARENTESCO_PACIENTE = 0
 # La API dibuja rayado (sospecha) a quien cumple esta regla según sus síntomas. Con la regla activa la API tarda
 # bastante más (más de 10 s en las pruebas): por eso el módulo tiene un timeout más largo (ver __init__.py).
 REGLA_SOSPECHA = "un_cardinal_o_dos_secundarios"
+
+# Códigos de patología del propio módulo 1 (los de su catálogo, averiguados contra la API; no son los de
+# bioinformática). Con el mismo código, un diagnóstico confirmado y la sospecha que calcula la API son la misma
+# enfermedad: si el familiar ya la tiene diagnosticada, no se dibuja además como sospecha.
+CODIGOS_PATOLOGIA = {
+    "fabry": "SIM-FABRY",
+    "pompe": "SIM-POMPE",
+    "mucopolisacaridosis 1": "SIM-MPS1",
+    "gaucher": "SIM-GAUCHER",
+    "asmd": "SIM-ASMD",
+}
 SEXO_DESCONOCIDO = "no_identificado"  # el paciente no tiene sexo cargado (la API no lo necesita)
 
 

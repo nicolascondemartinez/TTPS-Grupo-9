@@ -75,7 +75,7 @@ def test_arma_el_pedido_y_devuelve_el_svg():
         {"parentesco": 0, "nombre": "Tomás", "apellido": "Ruiz", "sexo": "no_identificado", "edad": 9,
          "sintomas": [{"codigo": "247398009", "nombre": "dolor neuropático"}]},
         {"parentesco": 1, "nombre": "Carolina", "apellido": "Ruiz", "sexo": "no_identificado", "sintomas": [],
-         "diagnosticos": [{"codigo": "FABRY", "nombre": "Fabry"}]},
+         "diagnosticos": [{"codigo": "SIM-FABRY", "nombre": "Fabry"}]},  # código del módulo 1
         {"parentesco": 2, "nombre": "Sofía Belén", "apellido": "Ruiz", "sexo": "no_identificado",
          "sintomas": [{"codigo": "45004005", "nombre": "hipohidrosis"}]},
     ], "opciones": {"reglaSospecha": "un_cardinal_o_dos_secundarios"}}  # rayado de la sospecha
