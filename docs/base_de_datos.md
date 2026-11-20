@@ -55,7 +55,8 @@ usá la conexión directa o el session pooler (5432).
 9. El diagnóstico presuntivo del paciente es una o más patologías (`paciente_patologia`). Una patología sospechada
    en algún paciente no se puede borrar (RESTRICT); al borrar el paciente se borran su diagnóstico y sus familiares.
 10. `familiar.sexo` (hombre, mujer o no_identificado): lo necesita el módulo de familiograma para ubicar a los
-    abuelos, tíos y medio hermanos de cada lado (deduce el lado por el sexo del progenitor).
+    abuelos, tíos y medio hermanos de cada lado (deduce el lado por el sexo del progenitor). `familiar.edad` (años al
+    momento del alta) y `familiar.fallecido` son opcionales: el familiograma los dibuja si están.
 
 
 ## Queda en la aplicación (no en la base)

@@ -2,7 +2,7 @@
 import uuid
 from datetime import date
 
-from sqlalchemy import (Boolean, Column, Date, ForeignKey, Index, String, Table,
+from sqlalchemy import (Boolean, Column, Date, ForeignKey, Index, Integer, String, Table,
                         Text, text)
 from sqlalchemy import Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -87,6 +87,8 @@ class Familiar(Base, UuidPk):
     # El módulo de familiograma lo necesita para ubicar abuelos, tíos y medio hermanos de cada lado.
     sexo: Mapped[Sexo] = mapped_column(pg_enum(Sexo, "sexo"), default=Sexo.no_identificado,
                                        server_default=Sexo.no_identificado.value)
+    edad: Mapped[int | None] = mapped_column(Integer)  # años al momento del alta; opcional
+    fallecido: Mapped[bool] = mapped_column(Boolean, default=False, server_default=text("false"))
     patologia_diagnosticada_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("patologia.id", ondelete="RESTRICT"))
 
     paciente: Mapped["Paciente"] = relationship(back_populates="familiares")

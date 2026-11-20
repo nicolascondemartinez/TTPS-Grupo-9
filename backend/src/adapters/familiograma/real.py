@@ -10,6 +10,9 @@ from src.adapters.familiograma.interfaz import (ArchivoFamiliograma, FamiliarFam
 from src.core.common.errors import validation_error
 
 PARENTESCO_PACIENTE = 0
+# La API dibuja rayado (sospecha) a quien cumple esta regla según sus síntomas. Con la regla activa la API tarda
+# bastante más (más de 10 s en las pruebas): por eso el módulo tiene un timeout más largo (ver __init__.py).
+REGLA_SOSPECHA = "un_cardinal_o_dos_secundarios"
 SEXO_DESCONOCIDO = "no_identificado"  # el paciente no tiene sexo cargado (la API no lo necesita)
 
 
@@ -32,9 +35,10 @@ class FamiliogramaReal:
         personas = [_persona(PARENTESCO_PACIENTE, paciente.nombre, paciente.apellido, paciente.sintomas,
                              edad=paciente.edad)]
         personas += [_persona(v.parentesco_id, v.nombre, v.apellido, v.familiar.sintomas,
-                              diagnostico=v.familiar.diagnostico_previo, sexo=v.familiar.sexo) for v in validados]
+                              edad=v.familiar.edad, diagnostico=v.familiar.diagnostico_previo, sexo=v.familiar.sexo,
+                              fallecido=v.familiar.fallecido) for v in validados]
         try:
-            datos = self.http.post("", {"personas": personas})
+            datos = self.http.post("", {"personas": personas, "opciones": {"reglaSospecha": REGLA_SOSPECHA}})
         except SolicitudRechazada as e:
             if e.status_externo == 422:
                 raise validation_error(_campos_invalidos(e.cuerpo))
@@ -48,13 +52,15 @@ class FamiliogramaReal:
 
 
 def _persona(parentesco: int, nombre: str, apellido: str, sintomas, edad=None, diagnostico=None,
-             sexo: str = SEXO_DESCONOCIDO) -> dict:
+             sexo: str = SEXO_DESCONOCIDO, fallecido: bool = False) -> dict:
     persona = {
         "parentesco": parentesco, "nombre": nombre, "apellido": apellido, "sexo": sexo,
         "sintomas": [{"codigo": s.snomed_code, "nombre": s.termino} for s in sintomas],
     }
     if edad is not None:
         persona["edad"] = edad
+    if fallecido:
+        persona["fallecido"] = True
     if diagnostico:
         codigo = CODIGOS_PATOLOGIA.get(diagnostico.strip().lower(), diagnostico.strip().upper())
         persona["diagnosticos"] = [{"codigo": codigo, "nombre": diagnostico}]

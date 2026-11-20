@@ -273,3 +273,12 @@ def test_un_abuelo_sin_saber_el_sexo_del_progenitor_no_se_puede_ubicar(api, db, 
         "familiares[1].parentesco": '"Luca Pérez" (abuelo/a paterno/a) necesita que haya exactamente un progenitor '
                                     "de sexo hombre; hay 0."}
     assert pacientes_creados(db) == (0, 0)
+
+
+def test_se_guardan_la_edad_y_si_fallecio(api, db, medico, alta):
+    familiares = [dict(familiar_con(None), edad=70, fallecido=True)]
+    r = post(api, medico, alta(familiares=familiares))
+    assert r.status_code == 201, r.get_json()
+    db.expire_all()
+    [f] = db.get(Paciente, r.get_json()["id"]).familiares
+    assert (f.edad, f.fallecido) == (70, True)

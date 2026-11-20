@@ -28,6 +28,22 @@ def es_menor_de_4_meses(fecha_nacimiento: date, al_dia: date) -> bool:
     return es_menor_de_meses(fecha_nacimiento, MESES_POMPE_URGENTE, al_dia)
 
 
+def anios_cumplidos(fecha_nacimiento: date, al_dia: date) -> int:
+    return al_dia.year - fecha_nacimiento.year - ((al_dia.month, al_dia.day) < (fecha_nacimiento.month, fecha_nacimiento.day))
+
+
+def edad_para_familiograma(fecha_nacimiento: date, al_dia: date) -> float:
+    """Años cumplidos (20, no 20,59). Menores de un año: meses cumplidos en años (4 meses -> 0.33),
+    porque la API del familiograma recibe la edad solo en años y es ella la que escribe "años" en la imagen."""
+    anios = anios_cumplidos(fecha_nacimiento, al_dia)
+    if anios >= 1:
+        return anios
+    meses = (al_dia.year - fecha_nacimiento.year) * 12 + al_dia.month - fecha_nacimiento.month - (al_dia.day < fecha_nacimiento.day)
+    if meses >= 1:
+        return round(meses / 12, 2)  # meses cumplidos: 11 meses -> 0.92 (nunca redondea a 1)
+    return round((al_dia - fecha_nacimiento).days / 365.25, 2)  # recién nacido: por días
+
+
 MAYORIA_DE_EDAD = 18
 
 

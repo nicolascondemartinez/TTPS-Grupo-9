@@ -19,6 +19,7 @@ from src.adapters.snomed import SintomaSnomed
 from src.core.almacenamiento import service as almacenamiento
 from src.core.almacenamiento.service import ArchivoLeido
 from src.core.clinico.acceso import obtener_paciente_visible
+from src.core.clinico.edad import edad_para_familiograma
 from src.core.clinico.service import sintoma_en_cache
 from src.core.common.errors import ApiError, validation_error
 from src.core.enums import Sexo
@@ -34,6 +35,8 @@ class FamiliarNuevo:
     sintomas: list[dict]  # [{snomed_code, termino}]
     patologia: Patologia | None  # diagnóstico previo (None: ninguno)
     sexo: Sexo = Sexo.no_identificado
+    edad: int | None = None  # años, opcional
+    fallecido: bool = False
 
 
 def parentescos() -> list[Parentesco]:
@@ -50,11 +53,8 @@ def preparar_familiares(session: Session, familiares: list[dict]) -> list[Famili
     if problemas:
         raise validation_error(problemas)
     return [FamiliarNuevo(f["parentesco"], f["nombre"], f["sintomas"], patologias.get(f["patologia_id"] or ""),
-                          f.get("sexo", Sexo.no_identificado)) for f in familiares]
-
-
-def edad_en_anios(fecha_nacimiento: date, al_dia: date) -> float:
-    return round((al_dia - fecha_nacimiento).days / 365.25, 2)
+                          f.get("sexo", Sexo.no_identificado), f.get("edad"), f.get("fallecido", False))
+            for f in familiares]
 
 
 def generar_familiograma(nombre: str, apellido: str, fecha_nacimiento: date, sintomas: list[dict],
@@ -64,11 +64,12 @@ def generar_familiograma(nombre: str, apellido: str, fecha_nacimiento: date, sin
     if not familiares:
         return None
     paciente = PacienteFamiliograma(
-        nombre, apellido, edad=edad_en_anios(fecha_nacimiento, al_dia or date.today()),
+        nombre, apellido, edad=edad_para_familiograma(fecha_nacimiento, al_dia or date.today()),
         sintomas=[SintomaSnomed(**s) for s in sintomas],
     )
     datos = [FamiliarFamiliograma(f.parentesco, f.nombre, [SintomaSnomed(**s) for s in f.sintomas],
-                                  f.patologia.nombre if f.patologia else None, Sexo(f.sexo).value) for f in familiares]
+                                  f.patologia.nombre if f.patologia else None, Sexo(f.sexo).value,
+                                  edad=f.edad, fallecido=f.fallecido) for f in familiares]
     try:
         return get_familiograma().generar_familiograma(paciente, datos)
     except AdaptadorError as e:
@@ -81,7 +82,7 @@ def agregar_familiares(session: Session, paciente: Paciente, familiares: list[Fa
     """Sin commit: va en la transacción del alta."""
     for f in familiares:
         paciente.familiares.append(Familiar(
-            parentesco=f.parentesco, nombre=f.nombre, sexo=f.sexo,
+            parentesco=f.parentesco, nombre=f.nombre, sexo=f.sexo, edad=f.edad, fallecido=f.fallecido,
             patologia_diagnosticada_id=f.patologia.id if f.patologia else None,
             sintomas=[sintoma_en_cache(session, s["snomed_code"], s["termino"]) for s in f.sintomas],
         ))

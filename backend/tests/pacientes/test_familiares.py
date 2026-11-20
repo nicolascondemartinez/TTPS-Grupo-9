@@ -40,8 +40,8 @@ def test_sin_familiares_es_valido(datos):
 
 def test_limpia_los_datos():
     [f] = validar_familiares([familiar(nombre="  Laura   Gómez ", sintomas=[TOS, TOS, FIEBRE])])
-    assert f == {"parentesco": "progenitor", "nombre": "Laura Gómez", "sexo": Sexo.no_identificado,
-                 "sintomas": [TOS, FIEBRE], "patologia_id": None}
+    assert f == {"parentesco": "progenitor", "nombre": "Laura Gómez", "sexo": Sexo.no_identificado, "edad": None,
+                 "fallecido": False, "sintomas": [TOS, FIEBRE], "patologia_id": None}
 
 
 def test_informa_cada_problema_por_familiar():
@@ -117,8 +117,16 @@ def test_si_el_modulo_rechaza_un_familiar_se_marca_el_campo():
     assert e.value.status == 400 and "familiares[0].parentesco" in campos(e)
 
 
-def test_edad_en_anios():
-    assert familiares_service.edad_en_anios(date(2017, 3, 1), date(2026, 11, 19)) == 9.72
+@pytest.mark.parametrize("edad", [-1, 121, "40", 3.5, True])
+def test_edad_del_familiar_invalida(edad):
+    with pytest.raises(ApiError) as e:
+        validar_familiares([familiar(edad=edad)])
+    assert "familiares[0].edad" in campos(e)
+
+
+def test_edad_y_fallecido_del_familiar():
+    [f] = validar_familiares([familiar(edad=43, fallecido=True)])
+    assert (f["edad"], f["fallecido"]) == (43, True)
 
 
 # ---------- Con base: guardar, asociar y descargar ----------

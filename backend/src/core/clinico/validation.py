@@ -122,6 +122,7 @@ def validar_modificacion_patologia(datos) -> tuple[list[dict], list[dict]]:
 # ---------- Familiares del paciente ----------
 
 PARENTESCO_MAX = 50
+EDAD_MAXIMA = 120
 NOMBRE_FAMILIAR_MAX = 150
 
 
@@ -161,6 +162,16 @@ def validar_familiares(datos) -> list[dict]:
         if sexo not in {s.value for s in Sexo}:
             problemas.append({"campo": f"{campo}.sexo", "problema": "elegí hombre, mujer o no sé"})
             sexo = Sexo.no_identificado.value
+        edad = crudo.get("edad")
+        if edad in (None, ""):
+            edad = None
+        elif isinstance(edad, bool) or not isinstance(edad, int) or not 0 <= edad <= EDAD_MAXIMA:
+            problemas.append({"campo": f"{campo}.edad", "problema": f"tiene que ser un número de años entre 0 y {EDAD_MAXIMA}"})
+            edad = None
+        fallecido = crudo.get("fallecido", False)
+        if not isinstance(fallecido, bool):
+            problemas.append({"campo": f"{campo}.fallecido", "problema": "tiene que ser sí o no"})
+            fallecido = False
         sintomas_crudos = crudo.get("sintomas") or []
         sintomas, vistos = [], set()
         if not isinstance(sintomas_crudos, list):
@@ -174,8 +185,8 @@ def validar_familiares(datos) -> list[dict]:
         patologia_id = crudo.get("patologia_id")
         if patologia_id is not None and (not isinstance(patologia_id, str) or not validar_uuid(patologia_id)):
             problemas.append({"campo": f"{campo}.patologia_id", "problema": "no es una patología válida"})
-        familiares.append({"parentesco": parentesco, "nombre": nombre, "sexo": Sexo(sexo), "sintomas": sintomas,
-                           "patologia_id": patologia_id})
+        familiares.append({"parentesco": parentesco, "nombre": nombre, "sexo": Sexo(sexo), "edad": edad,
+                           "fallecido": fallecido, "sintomas": sintomas, "patologia_id": patologia_id})
     if problemas:
         raise validation_error(problemas)
     return familiares
@@ -189,7 +200,6 @@ EMAIL_MAX = 254
 HISTORIA_CLINICA_MAX = 20000
 _DNI_RE = re.compile(r"^\d{7,8}$")  # DNI argentino
 _TELEFONO_RE = re.compile(r"^\+?[\d\s()-]{6,30}$")
-EDAD_MAXIMA = 120
 
 
 def _texto(datos: dict, campo: str, maximo: int, problemas: list[dict], obligatorio_msg: str = "es obligatorio") -> str:

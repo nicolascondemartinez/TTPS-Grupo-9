@@ -207,6 +207,9 @@ export default function AltaPaciente() {
           <Boton variante="ghost" onClick={() => navigate(LISTADO)} disabled={enviando}>Cancelar</Boton>
           <Boton type="submit" disabled={enviando}>{enviando ? 'Guardando…' : 'Dar de alta'}</Boton>
         </div>}
+        {enviando && datos.familiares.length > 0 && (
+          <p role="status" className="pacientes__suave">Generando el familiograma: puede tardar hasta un minuto.</p>
+        )}
       </form>
 
     </>

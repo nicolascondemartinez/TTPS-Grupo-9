@@ -16,8 +16,12 @@ from src.adapters.familiograma.mock import FamiliogramaMock
 from src.adapters.familiograma.real import FamiliogramaReal
 
 
+# Con la regla de sospecha activa (rayado), la API tarda más de 10 s. FAMILIOGRAMA_TIMEOUT lo pisa.
+TIMEOUT_SEGUNDOS = 45
+
+
 def get_familiograma() -> Familiograma:
-    return crear_adaptador("FAMILIOGRAMA", mock=FamiliogramaMock, real=FamiliogramaReal)
+    return crear_adaptador("FAMILIOGRAMA", mock=FamiliogramaMock, real=FamiliogramaReal, timeout=TIMEOUT_SEGUNDOS)
 
 
 __all__ = ["ArchivoFamiliograma", "FamiliarFamiliograma", "Familiograma", "PacienteFamiliograma", "Parentesco",

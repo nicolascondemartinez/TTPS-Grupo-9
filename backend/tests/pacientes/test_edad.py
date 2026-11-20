@@ -3,7 +3,7 @@ from datetime import date
 
 import pytest
 
-from src.core.clinico.edad import es_menor_de_4_meses, es_menor_de_edad, sumar_meses
+from src.core.clinico.edad import edad_para_familiograma, es_menor_de_4_meses, es_menor_de_edad, sumar_meses
 
 
 @pytest.mark.parametrize("fecha, meses, esperado", [
@@ -34,3 +34,14 @@ def test_nacido_un_31_cumple_4_meses_el_ultimo_dia_de_febrero():
 def test_menor_de_edad():
     assert es_menor_de_edad(date(2008, 11, 20), date(2026, 11, 19))      # cumple 18 mañana
     assert not es_menor_de_edad(date(2008, 11, 19), date(2026, 11, 19))  # cumple 18 hoy
+
+
+@pytest.mark.parametrize("nacimiento, esperado", [
+    (date(2006, 4, 25), 20),          # años cumplidos, no 20,59
+    (date(2025, 11, 20), 0.92),       # 11 meses (cumple un año mañana): nunca "1 año" antes de tiempo
+    (date(2026, 7, 19), 0.33),        # 4 meses: en años con decimales (la API recibe solo años)
+    (date(2026, 11, 5), 0.04),        # recién nacido de dos semanas: por días
+    (date(2025, 11, 19), 1),
+])
+def test_edad_para_familiograma(nacimiento, esperado):
+    assert edad_para_familiograma(nacimiento, date(2026, 11, 19)) == esperado

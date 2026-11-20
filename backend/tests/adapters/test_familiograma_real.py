@@ -78,7 +78,7 @@ def test_arma_el_pedido_y_devuelve_el_svg():
          "diagnosticos": [{"codigo": "FABRY", "nombre": "Fabry"}]},
         {"parentesco": 2, "nombre": "Sofía Belén", "apellido": "Ruiz", "sexo": "no_identificado",
          "sintomas": [{"codigo": "45004005", "nombre": "hipohidrosis"}]},
-    ]}
+    ], "opciones": {"reglaSospecha": "un_cardinal_o_dos_secundarios"}}  # rayado de la sospecha
 
 
 def test_familiar_sin_apellido_no_llama_al_post():
@@ -133,3 +133,10 @@ def test_manda_el_sexo_de_cada_familiar():
     from src.adapters.familiograma.real import _persona
     assert _persona(1, "Ana", "Ruiz", [], sexo="mujer")["sexo"] == "mujer"
     assert _persona(0, "Tomás", "Ruiz", [])["sexo"] == "no_identificado"
+
+
+def test_manda_la_edad_y_si_fallecio():
+    from src.adapters.familiograma.real import _persona
+    persona = _persona(1, "Martín", "Ruiz", [], edad=43, sexo="hombre", fallecido=True)
+    assert persona["edad"] == 43 and persona["fallecido"] is True
+    assert "fallecido" not in _persona(1, "Ana", "Ruiz", [])
