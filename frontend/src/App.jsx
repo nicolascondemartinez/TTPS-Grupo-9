@@ -6,6 +6,8 @@ import { MENU } from './constants/roles.js'
 import CambioContrasena from './pages/acceso/CambioContrasena.jsx'
 import FormularioPatologia from './pages/gerente/FormularioPatologia.jsx'
 import Patologias from './pages/gerente/Patologias.jsx'
+import AltaPaciente from './pages/medico/AltaPaciente.jsx'
+import PacientesMedico from './pages/medico/Pacientes.jsx'
 import Ingreso from './pages/acceso/Ingreso.jsx'
 import Presupuestos from './pages/administrativo/Presupuestos.jsx'
 import Turno from './pages/paciente/Turno.jsx'
@@ -46,6 +48,8 @@ export default function App() {
           <Route path="/administrativo/presupuestos" element={<Presupuestos />} />
           <Route path="/gerente/patologias/nueva" element={<FormularioPatologia />} />
           <Route path="/gerente/patologias/:id" element={<FormularioPatologia />} />
+          <Route path="/medico/pacientes" element={<PacientesMedico />} />
+          <Route path="/medico/pacientes/nuevo" element={<AltaPaciente />} />
 
           {rutasDelMenu.map((ruta) => <Route key={ruta} path={ruta} element={<EnConstruccion />} />)}
           <Route path="*" element={<EnConstruccion titulo="Página no encontrada" />} />

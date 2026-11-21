@@ -18,6 +18,7 @@ const TRAZOS = {
   menu: <path d="M4 6h16M4 12h16M4 18h16" />,
   cerrar: <path d="M6 6l12 12M18 6L6 18" />,
   mas: <path d="M12 5v14M5 12h14" />,
+  microfono: <><rect x="9" y="3" width="6" height="11" rx="3" /><path d="M5 11a7 7 0 0 0 14 0M12 18v3" /></>,
 }
 
 export default function Icono({ nombre, tamano = 20, titulo }) {

@@ -75,10 +75,10 @@ def test_arma_el_pedido_y_devuelve_el_svg():
         {"parentesco": 0, "nombre": "Tomás", "apellido": "Ruiz", "sexo": "no_identificado", "edad": 9,
          "sintomas": [{"codigo": "247398009", "nombre": "dolor neuropático"}]},
         {"parentesco": 1, "nombre": "Carolina", "apellido": "Ruiz", "sexo": "no_identificado", "sintomas": [],
-         "diagnosticos": [{"codigo": "FABRY", "nombre": "Fabry"}]},
+         "diagnosticos": [{"codigo": "SIM-FABRY", "nombre": "Fabry"}]},  # código del módulo 1
         {"parentesco": 2, "nombre": "Sofía Belén", "apellido": "Ruiz", "sexo": "no_identificado",
          "sintomas": [{"codigo": "45004005", "nombre": "hipohidrosis"}]},
-    ]}
+    ], "opciones": {"reglaSospecha": "un_cardinal_o_dos_secundarios"}}  # rayado de la sospecha
 
 
 def test_familiar_sin_apellido_no_llama_al_post():
@@ -102,7 +102,7 @@ def test_422_se_convierte_en_error_de_validacion_con_los_indices_de_familiares()
 
     assert e.value.status == 400 and e.value.codigo == "VALIDACION"
     assert e.value.detalle["campos"] == [
-        {"campo": "familiares[1].parentesco", "problema": "FALTA_PERSONA_DE_REFERENCIA: necesita un abuelo/a"},
+        {"campo": "familiares[1].parentesco", "problema": "necesita un abuelo/a"},  # sin el código técnico
         {"campo": "paciente.edad", "problema": "NUMERO_INVALIDO"},
         {"campo": "personas", "problema": "PACIENTE_REQUERIDO"},
     ]
@@ -119,3 +119,24 @@ def test_respuesta_sin_imagen_valida(cuerpo):
     familiograma, _ = real(post=(200, cuerpo))
     with pytest.raises(RespuestaInvalida):
         familiograma.generar_familiograma(PACIENTE, FAMILIARES)
+
+
+def test_los_mensajes_de_la_api_quedan_legibles_para_el_medico():
+    from src.adapters.familiograma.real import _mensaje_legible
+    assert _mensaje_legible('FALTA_PERSONA_DE_REFERENCIA: "Ana Ruiz" (tío/a materno/a) necesita al menos un abuelo/a '
+                            'materno/a (parentesco 3) en la lista.') == \
+        '"Ana Ruiz" (tío/a materno/a) necesita al menos un abuelo/a materno/a en la lista.'
+    assert _mensaje_legible("NUMERO_INVALIDO") == "NUMERO_INVALIDO"  # sin texto: se deja como está
+
+
+def test_manda_el_sexo_de_cada_familiar():
+    from src.adapters.familiograma.real import _persona
+    assert _persona(1, "Ana", "Ruiz", [], sexo="mujer")["sexo"] == "mujer"
+    assert _persona(0, "Tomás", "Ruiz", [])["sexo"] == "no_identificado"
+
+
+def test_manda_la_edad_y_si_fallecio():
+    from src.adapters.familiograma.real import _persona
+    persona = _persona(1, "Martín", "Ruiz", [], edad=43, sexo="hombre", fallecido=True)
+    assert persona["edad"] == 43 and persona["fallecido"] is True
+    assert "fallecido" not in _persona(1, "Ana", "Ruiz", [])

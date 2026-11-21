@@ -16,6 +16,14 @@ class TipoSospecha(str, Enum):
     familiar = "familiar"
 
 
+class Sexo(str, Enum):
+    """Mismos valores que la API de familiograma (módulo 1): con él deduce el lado materno o paterno."""
+
+    hombre = "hombre"
+    mujer = "mujer"
+    no_identificado = "no_identificado"
+
+
 class EstadoEstudio(str, Enum):
     creado = "creado"
     esperando_autorizacion = "esperando_autorizacion"  # obra social
@@ -107,6 +115,7 @@ class EstrategiaCdss(str, Enum):
 PG_ENUMS: list[tuple[str, type[Enum]]] = [
     ("rol_usuario", RolUsuario),
     ("tipo_sospecha", TipoSospecha),
+    ("sexo", Sexo),
     ("estado_estudio", EstadoEstudio),
     ("estado_lote", EstadoLote),
     ("resultado_analisis", ResultadoAnalisis),

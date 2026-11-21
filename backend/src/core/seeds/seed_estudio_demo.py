@@ -43,7 +43,7 @@ def run() -> None:
         if session.get(Paciente, paciente.id) is None:
             session.add(Paciente(
                 usuario_id=paciente.id, dni="30111222", fecha_nacimiento=date(1990, 5, 14), medico_alta_id=medico.id,
-                diagnostico_presuntivo_id=fabry.id, tipo_sospecha=TipoSospecha.clinica,
+                diagnostico_presuntivo=[fabry], tipo_sospecha=TipoSospecha.clinica,
                 historia_clinica="Paciente de prueba con sospecha clínica de enfermedad de Fabry.",
             ))
             session.flush()

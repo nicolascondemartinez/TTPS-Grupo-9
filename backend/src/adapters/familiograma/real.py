@@ -4,13 +4,26 @@ import binascii
 import re
 
 from src.adapters import HttpClient, RespuestaInvalida, SolicitudRechazada
-from src.adapters.bioinformatica.real import CODIGOS_PATOLOGIA
 from src.adapters.familiograma.interfaz import (ArchivoFamiliograma, FamiliarFamiliograma, PacienteFamiliograma,
                                                 Parentesco, validar_familiares)
 from src.core.common.errors import validation_error
 
 PARENTESCO_PACIENTE = 0
-SEXO_DESCONOCIDO = "no_identificado"  # el repo no guarda el sexo
+# La API dibuja rayado (sospecha) a quien cumple esta regla según sus síntomas. Con la regla activa la API tarda
+# bastante más (más de 10 s en las pruebas): por eso el módulo tiene un timeout más largo (ver __init__.py).
+REGLA_SOSPECHA = "un_cardinal_o_dos_secundarios"
+
+# Códigos de patología del propio módulo 1 (los de su catálogo, averiguados contra la API; no son los de
+# bioinformática). Con el mismo código, un diagnóstico confirmado y la sospecha que calcula la API son la misma
+# enfermedad: si el familiar ya la tiene diagnosticada, no se dibuja además como sospecha.
+CODIGOS_PATOLOGIA = {
+    "fabry": "SIM-FABRY",
+    "pompe": "SIM-POMPE",
+    "mucopolisacaridosis 1": "SIM-MPS1",
+    "gaucher": "SIM-GAUCHER",
+    "asmd": "SIM-ASMD",
+}
+SEXO_DESCONOCIDO = "no_identificado"  # el paciente no tiene sexo cargado (la API no lo necesita)
 
 
 class FamiliogramaReal:
@@ -32,9 +45,10 @@ class FamiliogramaReal:
         personas = [_persona(PARENTESCO_PACIENTE, paciente.nombre, paciente.apellido, paciente.sintomas,
                              edad=paciente.edad)]
         personas += [_persona(v.parentesco_id, v.nombre, v.apellido, v.familiar.sintomas,
-                              diagnostico=v.familiar.diagnostico_previo) for v in validados]
+                              edad=v.familiar.edad, diagnostico=v.familiar.diagnostico_previo, sexo=v.familiar.sexo,
+                              fallecido=v.familiar.fallecido) for v in validados]
         try:
-            datos = self.http.post("", {"personas": personas})
+            datos = self.http.post("", {"personas": personas, "opciones": {"reglaSospecha": REGLA_SOSPECHA}})
         except SolicitudRechazada as e:
             if e.status_externo == 422:
                 raise validation_error(_campos_invalidos(e.cuerpo))
@@ -47,13 +61,16 @@ class FamiliogramaReal:
             raise RespuestaInvalida(self.http.modulo, {"motivo": "imagen"})
 
 
-def _persona(parentesco: int, nombre: str, apellido: str, sintomas, edad=None, diagnostico=None) -> dict:
+def _persona(parentesco: int, nombre: str, apellido: str, sintomas, edad=None, diagnostico=None,
+             sexo: str = SEXO_DESCONOCIDO, fallecido: bool = False) -> dict:
     persona = {
-        "parentesco": parentesco, "nombre": nombre, "apellido": apellido, "sexo": SEXO_DESCONOCIDO,
+        "parentesco": parentesco, "nombre": nombre, "apellido": apellido, "sexo": sexo,
         "sintomas": [{"codigo": s.snomed_code, "nombre": s.termino} for s in sintomas],
     }
     if edad is not None:
         persona["edad"] = edad
+    if fallecido:
+        persona["fallecido"] = True
     if diagnostico:
         codigo = CODIGOS_PATOLOGIA.get(diagnostico.strip().lower(), diagnostico.strip().upper())
         persona["diagnosticos"] = [{"codigo": codigo, "nombre": diagnostico}]
@@ -63,9 +80,17 @@ def _persona(parentesco: int, nombre: str, apellido: str, sintomas, edad=None, d
 def _campos_invalidos(cuerpo) -> list[dict]:
     error = cuerpo.get("error", {}) if isinstance(cuerpo, dict) else {}
     detalles = error.get("detalles") or []
-    campos = [{"campo": _campo(d.get("ruta", "")), "problema": d.get("mensaje", "")}
+    campos = [{"campo": _campo(d.get("ruta", "")), "problema": _mensaje_legible(d.get("mensaje", ""))}
               for d in detalles if isinstance(d, dict)]
     return campos or [{"campo": "familiares", "problema": error.get("mensaje", "datos inválidos")}]
+
+
+def _mensaje_legible(mensaje: str) -> str:
+    """Saca el código técnico y los números de parentesco para mostrárselo al médico:
+    'FALTA_PERSONA_DE_REFERENCIA: "Ana" (tío/a materno/a) necesita un abuelo/a materno/a (parentesco 3) en la lista.'
+    -> '"Ana" (tío/a materno/a) necesita un abuelo/a materno/a en la lista.'"""
+    mensaje = re.sub(r"^[A-Z_]+:\s+", "", mensaje)
+    return re.sub(r"\s*\(parentesco \d+\)", "", mensaje)
 
 
 def _campo(ruta: str) -> str:

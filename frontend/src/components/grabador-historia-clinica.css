@@ -1,0 +1,10 @@
+/* ---------- Grabador del resumen de historia clínica ---------- */
+.grabador-hc__controles { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.grabador-hc__texto { height: auto; min-height: 160px; padding: 12px 14px; line-height: 1.5; resize: vertical; }
+.grabador-hc__estado { font-size: 14px; color: var(--texto-suave); }
+.grabador-hc__grabando { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.grabador-hc__punto { width: 10px; height: 10px; border-radius: 50%; background: #be123c; animation: grabador-hc-latido 1.2s ease-in-out infinite; }
+@keyframes grabador-hc-latido { 50% { opacity: 0.3; } }
+@media (prefers-reduced-motion: reduce) { .grabador-hc__punto { animation: none; } }
+/* En celular los botones ocupan el ancho, para que sean fáciles de tocar */
+@media (max-width: 520px) { .grabador-hc__controles .btn { flex: 1 1 140px; } }

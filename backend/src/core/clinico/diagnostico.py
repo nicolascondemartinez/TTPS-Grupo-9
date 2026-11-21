@@ -71,3 +71,26 @@ def validar_diagnosticos(patologias, codigos_del_paciente: Iterable[str]) -> lis
     """Un resultado por cada patología sospechada (cada una se valida por separado)."""
     codigos = set(codigos_del_paciente)
     return [validar_diagnostico(p, codigos) for p in patologias]
+
+
+# ---------- Sospecha familiar ----------
+# El paciente se estudia porque un familiar tiene la enfermedad: puede no tener síntomas todavía. El diagnóstico
+# es válido si AL MENOS UNA de las patologías sospechadas está diagnosticada en algún familiar cargado (puede
+# sospecharse además otra patología propia del paciente). Pendiente de confirmar con el cliente.
+
+def validar_sospecha_familiar(patologias, familiares) -> tuple[bool, list[ResultadoDiagnostico]]:
+    """`familiares`: [(nombre, parentesco, patologia_id o None)]. Devuelve (válido, un resultado por patología)."""
+    resultados = []
+    for patologia in patologias:
+        con_diagnostico = [(n, p) for n, p, pid in familiares if pid is not None and str(pid) == str(patologia.id)]
+        if con_diagnostico:
+            quienes = ", ".join(f"{n} ({p})" for n, p in con_diagnostico)
+            motivo = f"Un familiar tiene diagnóstico de {patologia.nombre}: {quienes}."
+        else:
+            motivo = f"Ningún familiar cargado tiene diagnóstico de {patologia.nombre}."
+        resultados.append(ResultadoDiagnostico(
+            patologia_id=str(patologia.id) if patologia.id else None, patologia=patologia.nombre,
+            valido=bool(con_diagnostico), motivo=motivo,
+            cardinal_presente=False, cardinales_presentes=(), secundarios_presentes=(),
+        ))
+    return any(r.valido for r in resultados), resultados

@@ -59,7 +59,7 @@ with nueva_sesion() as s:
     s.flush()  # sin relationship entre tablas, el ORM no garantiza el orden de INSERT: se fuerza con flush
     paciente = Paciente(
         usuario_id=paciente_u.id, dni="1", fecha_nacimiento=date(2026, 8, 1), medico_alta_id=medico_u.id,
-        diagnostico_presuntivo_id=pato.id, tipo_sospecha=TipoSospecha.clinica, historia_clinica="resumen",
+        diagnostico_presuntivo=[pato], tipo_sospecha=TipoSospecha.clinica, historia_clinica="resumen",
     )
     s.add(paciente)
     s.flush()

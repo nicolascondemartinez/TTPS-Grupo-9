@@ -48,11 +48,30 @@ async function descargar(path, nombreArchivo) {
   URL.revokeObjectURL(url)           // libero la dirección temporal, ya no hace falta
 }
 
+// Envía un formulario con archivos (por ejemplo, el audio grabado). Sin Content-Type: el navegador lo arma
+// solo con el separador ("boundary") que necesita multipart/form-data.
+async function enviarArchivos(path, formData) {
+  const token = getToken()
+  const response = await fetch(`${BASE_URL}${path}`, {
+    method: 'POST',
+    headers: { 'X-Device-Id': getDeviceId(), ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    body: formData,
+    credentials: 'include',
+  })
+  const data = await response.json().catch(() => null)
+  if (!response.ok) {
+    if (response.status === 401 && token) avisarNoAutorizado()   // sesión vencida: se cierra la sesión
+    throw { status: response.status, data }
+  }
+  return data
+}
+
 export const api = {
   get: (path) => request('GET', path),   // pedir datos
   post: (path, body) => request('POST', path, body),  // crear algo
   put: (path, body) => request('PUT', path, body), // modificar algo
   delete: (path) => request('DELETE', path),   // borrar algo
   descargar,   // bajar un archivo (es lo mismo que descargar: descargar)
+  enviarArchivos, // subir archivos con multipart/form-data (ej. el audio de la historia clínica)
 }
 
