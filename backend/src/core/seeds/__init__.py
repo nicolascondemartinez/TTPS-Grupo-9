@@ -2,9 +2,10 @@
 
 
 def run() -> None:
-    from src.core.seeds import seed_catalogos, seed_patologias, seed_permisos, seed_usuarios_demo
+    from src.core.seeds import seed_catalogos, seed_patologias, seed_permisos, seed_usuarios_demo, seed_especialidades
 
     seed_permisos.run()
     seed_catalogos.run()
+    seed_especialidades.run()
     seed_patologias.run()
     seed_usuarios_demo.run()

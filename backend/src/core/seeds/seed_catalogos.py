@@ -1,9 +1,6 @@
 """Catálogos mínimos del core. Idempotente: se puede correr varias veces.
 
     DATABASE_URL=postgresql+psycopg2://... python -m seeds.seed_catalogos
-
-Las especialidades NO se siembran: el cliente pidió una lista estandarizada lo más completa posible
-(cargarla desde un CSV oficial). Los centros de extracción tampoco (son ~100 y dependen de datos reales).
 """
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
