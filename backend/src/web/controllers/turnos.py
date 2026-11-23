@@ -59,3 +59,8 @@ def _pdf(contenido: bytes, nombre: str) -> Response:
     """Respuesta con el PDF para descargar."""
     return Response(contenido, mimetype="application/pdf",
                     headers={"Content-Disposition": f'attachment; filename="{nombre}"'})
+
+@bp.post("/turnos/<turno_id>/extraccion")
+@require_permission("extraccion_registrar")
+def registrar_extraccion(turno_id):
+    return turno_view(*turnos_service.registrar_extraccion(get_db(), turno_id, g.usuario))

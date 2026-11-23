@@ -174,3 +174,28 @@ def documento_del_turno(session: Session, turno_id: str, usuario: Usuario, tipo:
     if tipo == "orden":
         return generar_orden(datos), "orden-de-extraccion.pdf"
     return generar_consentimiento(datos), "consentimiento-informado.pdf"
+
+
+# --- Registro de asistencia / extracción (Administrativo) ---
+def registrar_extraccion( session: Session, turno_id: str, administrativo: Usuario) -> tuple[Turno, CentroExtraccion, Estudio]:
+    """Marca un turno reservado como asistido y pasa su estudio a listo_para_retirar."""
+    
+    turno = session.get(Turno, turno_id) if validar_uuid(turno_id) else None
+    if turno is None:
+        raise ApiError(404, "TURNO_NO_ENCONTRADO", "El turno no existe")
+
+    estudio = session.scalars(
+        select(Estudio).where(Estudio.id == turno.estudio_id).with_for_update()
+    ).first()
+    if estudio is None:
+        raise ApiError(404, "ESTUDIO_NO_ENCONTRADO", "El estudio asociado al turno no existe")
+
+    if turno.estado != EstadoTurno.reservado:
+        raise ApiError(409, "TURNO_NO_VIGENTE", "Solo se puede registrar la extracción de un turno reservado")
+    if estudio.estado != EstadoEstudio.turno_sacado:
+        raise ApiError(409, "ESTADO_INVALIDO", "El estudio no se encuentra en estado Turno sacado")
+
+    turno.estado = EstadoTurno.asistido
+    cambiar_estado_estudio(session, estudio, EstadoEstudio.listo_para_retirar, administrativo.id)
+    session.commit()
+    return turno, session.get(CentroExtraccion, turno.centro_id), estudio

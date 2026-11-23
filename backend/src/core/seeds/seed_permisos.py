@@ -67,6 +67,7 @@ PERMISOS_POR_ROL: dict[RolUsuario, list[str]] = {
         "estudio_listar",
         "estudio_ubicacion_ver",
         "estudio_ver",
+        "extraccion_registrar",
         "inasistencia_registrar",
         "lote_listar",
         "lote_programar_retiro",
