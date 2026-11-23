@@ -27,6 +27,9 @@ class FamiliarFamiliograma:
     nombre: str  # nombre completo, como familiar.nombre: el apellido es la última palabra
     sintomas: list[SintomaSnomed] = field(default_factory=list)
     diagnostico_previo: str | None = None  # nombre de la patología diagnosticada
+    sexo: str = "no_identificado"  # hombre | mujer | no_identificado (lo usa la API para deducir el lado)
+    edad: float | None = None  # años; None: "Edad no informada"
+    fallecido: bool = False
 
 
 @dataclass(frozen=True)

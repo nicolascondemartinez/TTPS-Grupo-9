@@ -33,7 +33,11 @@ usá la conexión directa o el session pooler (5432).
   Patologías, genes y variantes cuelgan del análisis. Una variante solo puede cargarse sobre un gen pedido (FK compuesta).
 - `estudio_historial_estado` registra cada cambio de estado (tablero de tiempos y cuellos de botella).
 - Datos de otros módulos: `sintoma` y `gen` son cachés locales (código único); variantes, obra social y cupón se guardan como código + foto.
-- Archivos (PDFs, CSV, datos crudos) en Supabase Storage; la base guarda solo la ruta/URL.
+- Archivos (familiograma, PDFs, CSV): se guardan con el servicio de almacenamiento (`core/almacenamiento/service.py`)
+  y los modelos guardan solo la ruta que devuelve. Por ahora van a la tabla `archivo` (en la base): funciona en
+  cualquier despliegue sin configurar nada (el disco de Render y similares se borra en cada reinicio) y el archivo
+  entra en la misma transacción. Antes se pensaba en Supabase Storage: si hace falta (archivos grandes), se suma
+  como otra implementación del servicio, sin cambiar el código que lo usa.
 - RLS activado en todas las tablas (sin políticas): reset_db() lo activa en todas las tablas; no hace falta repetirlo;
   la app accede por conexión directa. Las tablas nuevas deben repetir `ENABLE ROW LEVEL SECURITY`.
 
@@ -44,15 +48,22 @@ usá la conexión directa o el session pooler (5432).
 3. `configuracion` guarda `cdss_estrategia` (módulo 4), sembrada con `mayor_cantidad_sintomas`.
 4. `lote.token_retiro`: UUID que va en la URL que invoca FedEx (no se expone el id interno).
 5. `parada_estudio` relaciona estudios con paradas: permite mostrar qué transportista lleva una muestra.
-6. `patologia_sintoma`: un solo síntoma cardinal por patología (índice único parcial).
+6. `patologia_sintoma`: una patología puede tener uno o más síntomas cardinales (`es_cardinal`), y un mismo síntoma puede ser cardinal de varias patologías.
 7. `cobertura` no tiene estado propio: autorizada/rechazada se deduce del estado del estudio y su historial.
-8. `paciente.familiograma_url` es opcional (el cliente dijo que puede quedar vacío).
+8. `paciente.familiograma_url` es opcional (el cliente dijo que puede quedar vacío). Es la ruta del SVG que devuelve
+   el módulo 1 (la issue decía PDF, pero la API devuelve SVG y se guarda tal cual).
+9. El diagnóstico presuntivo del paciente es una o más patologías (`paciente_patologia`). Una patología sospechada
+   en algún paciente no se puede borrar (RESTRICT); al borrar el paciente se borran su diagnóstico y sus familiares.
+10. `familiar.sexo` (hombre, mujer o no_identificado): lo necesita el módulo de familiograma para ubicar a los
+    abuelos, tíos y medio hermanos de cada lado (deduce el lado por el sexo del progenitor). `familiar.edad` (años al
+    momento del alta) y `familiar.fallecido` son opcionales: el familiograma los dibuja si están.
 
 
 ## Queda en la aplicación (no en la base)
 
 Tope de 10 estudios por lote; grilla de turnos (15 min, L–V, 9–18, sin feriados); coherencia entre `usuario.rol` y su perfil;
-precio (USD 500 hasta 5 genes + USD 30 por gen adicional); `es_pompe_urgente` (Pompe y menor de 4 meses al dar de alta);
+precio (USD 500 hasta 5 genes + USD 30 por gen adicional); `es_pompe_urgente` (Pompe y menor de 4 meses de calendario al dar de alta: `core/clinico/edad.py`);
+al menos una patología en el diagnóstico presuntivo; quién ve los datos clínicos del paciente (su médico y él mismo);
 transiciones válidas de estado; reinicio de `inasistencias` al volver a `creado`.
 
 Nota ORM: entre tablas sin `relationship()` SQLAlchemy no garantiza el orden de INSERT dentro de un mismo flush;

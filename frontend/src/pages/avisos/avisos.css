@@ -1,0 +1,19 @@
+/* Lista de avisos. Colores y medidas: tokens.css */
+.avisos { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+
+.aviso {
+  display: flex; flex-direction: column; gap: 4px; width: 100%; padding: 16px 18px;
+  background: var(--blanco); color: var(--tinta); font: inherit; text-align: left;
+  border: 1px solid var(--linea); border-radius: var(--radio-campo); cursor: default;
+}
+.aviso--pendiente { cursor: pointer; background: #f5f0ff; border-left: 4px solid var(--violeta-600); }
+.aviso--pendiente:hover { background: #ede7fe; }
+.aviso:focus-visible { outline: 3px solid var(--violeta-400); outline-offset: 2px; }
+
+.aviso__titulo { font-family: var(--font-titulo); font-weight: 600; font-size: 16px; }
+.aviso--pendiente .aviso__titulo::before {
+  content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 8px;
+  border-radius: 50%; background: var(--naranja-600);
+}
+.aviso__mensaje { font-size: 14px; color: var(--texto-suave); }
+.aviso__fecha { font-size: 13px; color: var(--texto-suave); }

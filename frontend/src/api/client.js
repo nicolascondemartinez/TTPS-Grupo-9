@@ -25,9 +25,53 @@ async function request(method, path, body) {
   return data
 }
 
-export const api = {
-  get: (path) => request('GET', path),
-  post: (path, body) => request('POST', path, body),
-  put: (path, body) => request('PUT', path, body),
-  delete: (path) => request('DELETE', path),
+// Descarga un archivo (por ejemplo un PDF) que necesita sesión: no alcanza con un <a href>, porque el link
+// no manda el token. Se pide con fetch, se arma un link temporal y se "hace clic" para que el navegador lo baje.
+async function descargar(path, nombreArchivo) {
+  const token = getToken()                                   // el token de la sesión, para que el back sepa quién pide
+  const response = await fetch(`${BASE_URL}${path}`, {
+    // mismos headers que en request(), pero sin Content-Type porque no mandamos nada en el cuerpo
+    headers: { 'X-Device-Id': getDeviceId(), ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    credentials: 'include',
+  })
+  if (!response.ok) {
+    // si falla, el back manda el error en JSON (no un PDF), así que lo leo como en request()
+    const data = await response.json().catch(() => null)
+    if (response.status === 401 && token) avisarNoAutorizado()   // sesión vencida: se cierra la sesión
+    throw { status: response.status, data }                      // la pantalla lo agarra con el catch
+  }
+  const url = URL.createObjectURL(await response.blob()) // blob = el archivo en memoria; le creo una dirección temporal
+  const link = document.createElement('a')  // armo un link invisible...
+  link.href = url
+  link.download = nombreArchivo      // ...que descarga con este nombre en vez de abrirlo
+  link.click()                       // lo "clickeo" por código y el navegador baja el archivo
+  URL.revokeObjectURL(url)           // libero la dirección temporal, ya no hace falta
 }
+
+// Envía un formulario con archivos (por ejemplo, el audio grabado). Sin Content-Type: el navegador lo arma
+// solo con el separador ("boundary") que necesita multipart/form-data.
+async function enviarArchivos(path, formData) {
+  const token = getToken()
+  const response = await fetch(`${BASE_URL}${path}`, {
+    method: 'POST',
+    headers: { 'X-Device-Id': getDeviceId(), ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    body: formData,
+    credentials: 'include',
+  })
+  const data = await response.json().catch(() => null)
+  if (!response.ok) {
+    if (response.status === 401 && token) avisarNoAutorizado()   // sesión vencida: se cierra la sesión
+    throw { status: response.status, data }
+  }
+  return data
+}
+
+export const api = {
+  get: (path) => request('GET', path),   // pedir datos
+  post: (path, body) => request('POST', path, body),  // crear algo
+  put: (path, body) => request('PUT', path, body), // modificar algo
+  delete: (path) => request('DELETE', path),   // borrar algo
+  descargar,   // bajar un archivo (es lo mismo que descargar: descargar)
+  enviarArchivos, // subir archivos con multipart/form-data (ej. el audio de la historia clínica)
+}
+

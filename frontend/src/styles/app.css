@@ -169,6 +169,11 @@ select.campo { appearance: auto; }
 .app__nav-item:hover { color: #fff; background: rgba(255, 255, 255, 0.06); }
 .app__nav-item.active { background: rgba(139, 92, 246, 0.28); color: #fff; box-shadow: inset 3px 0 0 var(--naranja-400); }
 .app__nav-item:focus-visible { outline: 3px solid var(--violeta-300); outline-offset: 2px; }
+.app__insignia {
+  margin-left: auto; min-width: 22px; height: 22px; padding: 0 7px; border-radius: var(--radio-pill);
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--naranja-400); color: var(--tinta); font-size: 12px; font-weight: 600;
+}
 .app__usuario {
   display: flex; flex-direction: column; gap: 12px; padding: 12px;
   border-radius: 14px; background: rgba(255, 255, 255, 0.06);

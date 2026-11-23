@@ -1,9 +1,10 @@
 """Importar todos los modelos registra las tablas en Base.metadata (lo necesita create_all)."""
+from src.core.almacenamiento.models import Archivo
 from src.core.auth.models import Permiso, RolPermiso, Sesion
 from src.core.avisos.models import Aviso, Configuracion
 from src.core.clinico.models import (Familiar, Paciente, Patologia,
                                    PatologiaSintoma, Sintoma, familiar_sintoma,
-                                   paciente_sintoma)
+                                   paciente_patologia, paciente_sintoma)
 from src.core.estudios.models import (Analisis, AnalisisGen, AnalisisPatologia,
                                     AnalisisVariante, Estudio,
                                     EstudioHistorialEstado, Gen)

@@ -4,6 +4,7 @@ import Avatar from '../components/Avatar.jsx'
 import Icono from '../components/Icono.jsx'
 import Logo from '../components/Logo.jsx'
 import { MENU, ROLES } from '../constants/roles.js'
+import { useAvisos } from '../avisos/AvisosContext.jsx'
 import { useSesion } from '../sesion/SesionContext.jsx'
 
 // Marco de las pantallas internas: barra lateral con el menú del rol + contenido.
@@ -11,6 +12,7 @@ import { useSesion } from '../sesion/SesionContext.jsx'
 export default function AppLayout() {
   const { usuario, cambiarRol, cerrarSesion, modoDev } = useSesion()
   const [menuAbierto, setMenuAbierto] = useState(false)
+  const { pendientes } = useAvisos()
 
   return (
     <div className={`app${menuAbierto ? ' app--menu-abierto' : ''}`}>
@@ -31,6 +33,9 @@ export default function AppLayout() {
             <NavLink key={item.ruta} to={item.ruta} className="app__nav-item" onClick={() => setMenuAbierto(false)}>
               <Icono nombre={item.icono} />
               {item.texto}
+              {item.ruta === '/avisos' && pendientes > 0 && (
+                <span className="app__insignia" aria-label={`${pendientes} avisos pendientes`}>{pendientes}</span>
+              )}
             </NavLink>
           ))}
         </nav>

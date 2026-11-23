@@ -49,7 +49,7 @@ def test_devuelve_un_resultado_por_patologia_con_el_motivo(api, medico, ids):
     assert fabry == {
         "patologia_id": ids["Fabry"], "patologia": "Fabry", "valido": True,
         "motivo": "El paciente presenta el síntoma cardinal de Fabry (dolor neuropático).",
-        "cardinal_presente": True, "secundarios_presentes": [],
+        "cardinal_presente": True, "cardinales_presentes": ["dolor neuropático"], "secundarios_presentes": [],
     }
     assert pompe["valido"] is False and pompe["secundarios_presentes"] == ["hepatomegalia"]
     assert "no es consistente" in pompe["motivo"]

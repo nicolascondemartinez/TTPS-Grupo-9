@@ -12,6 +12,7 @@ dependencies = [
     "psycopg2-binary>=2.9",
     "argon2-cffi>=23.1",
     "requests (>=2.32)",
+    "reportlab (>=5.1.0,<6.0.0)",
 ]
 
 [tool.poetry]
@@ -19,6 +20,15 @@ package-mode = false
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=8.0"
+
+# Transcripción real de la historia clínica con Whisper (opcional: sin esto se usa el mock).
+#   poetry install --with transcripcion   y   TRANSCRIPCION_MODE=real en .env
+[tool.poetry.group.transcripcion]
+optional = true
+
+[tool.poetry.group.transcripcion.dependencies]
+faster-whisper = ">=1.2,<2"
+av = ">=14,<19"  # av 19 sacó un parámetro que faster-whisper 1.2 todavía usa al leer el audio
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

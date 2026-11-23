@@ -19,6 +19,8 @@ import Tarjeta from '../components/Tarjeta.jsx'
 import { ESTADOS_ESTUDIO } from '../constants/estados.js'
 import Mapa from '../components/Mapa.jsx'
 import SelectorSintomas from '../components/SelectorSintomas.jsx'
+import GrabadorHistoriaClinica from '../components/GrabadorHistoriaClinica.jsx'
+import SeccionFamiliares from '../components/SeccionFamiliares.jsx'
 
 // Catálogo de la base de frontend: muestra cada componente y cómo usarlo.
 // Datos de ejemplo solamente.
@@ -64,6 +66,8 @@ export default function Design() {
   const notificar = useNotificar()
   const [centroElegido, setCentroElegido] = useState('c2')
   const [sintomas, setSintomas] = useState([])
+  const [historia, setHistoria] = useState('')
+  const [familiares, setFamiliares] = useState([])
 
   useEffect(() => {
     api.get('/health').then((d) => setApiEstado(d.status)).catch(() => setApiEstado('sin conexión'))
@@ -194,12 +198,42 @@ export default function Design() {
       <Seccion
         etiqueta="10"
         titulo="Selector de síntomas (SNOMED)"
-        codigo={`const [sintomas, setSintomas] = useState([])   // [{ snomed_code, termino }]\n<SelectorSintomas etiqueta="Síntomas del paciente" valor={sintomas} onChange={setSintomas} />\n// Opcionales: maximo={1} (un solo síntoma, ej. el cardinal) y excluir={cardinal} (no se ofrecen).\n// Busca desde 3 letras en GET /api/sintomas (permiso sintoma_buscar: médico y gerente médico).\n// Acá, sin haber ingresado con uno de esos roles, se ve el mensaje de error de la API.`}
+        codigo={`const [sintomas, setSintomas] = useState([])   // [{ snomed_code, termino }]\n<SelectorSintomas etiqueta="Síntomas del paciente" valor={sintomas} onChange={setSintomas} />\n// Opcionales: maximo={1} (un solo síntoma) y excluir={cardinales} (no se ofrecen).\n// Busca desde 3 letras en GET /api/sintomas (permiso sintoma_buscar: médico y gerente médico).\n// Acá, sin haber ingresado con uno de esos roles, se ve el mensaje de error de la API.`}
       >
         <div style={{ maxWidth: 520 }}>
           <SelectorSintomas etiqueta="Síntomas del paciente" valor={sintomas} onChange={setSintomas} />
         </div>
         <p className="tarjeta__subtitulo">Valor: {sintomas.length ? sintomas.map((s) => `${s.snomed_code} ${s.termino}`).join(' · ') : 'ninguno'}</p>
+      </Seccion>
+
+      <Seccion
+        etiqueta="11"
+        titulo="Grabador de la historia clínica"
+        codigo={`const [historia, setHistoria] = useState('')
+<GrabadorHistoriaClinica valor={historia} onChange={setHistoria} error={errores.historia_clinica} />
+// Graba con el micrófono y transcribe en POST /api/historia-clinica/transcribir (permiso historia_clinica_grabar: médico).
+// Reanudar agrega un tramo al final; Volver a grabar borra y empieza de cero. Sin micrófono, se escribe a mano.
+// El micrófono solo funciona en https o en localhost. Acá, sin haber ingresado como médico, la transcripción da error.`}
+      >
+        <div style={{ maxWidth: 640 }}>
+          <GrabadorHistoriaClinica valor={historia} onChange={setHistoria} />
+        </div>
+        <p className="tarjeta__subtitulo">Valor: {historia ? `${historia.length} caracteres` : 'vacío'}</p>
+      </Seccion>
+
+      <Seccion
+        etiqueta="12"
+        titulo="Familiares del paciente"
+        codigo={`const [familiares, setFamiliares] = useState([])   // [{ parentesco, nombre, sintomas, patologia_id }]
+<SeccionFamiliares valor={familiares} onChange={setFamiliares} errores={{ 0: 'Ingresá nombre y apellido' }} />
+// Parentescos de GET /api/parentescos (módulo de familiograma) y diagnóstico previo de GET /api/patologias.
+// Opcional: con cero familiares no se genera familiograma. Va adentro del formulario del alta (no usa <form>).
+// Acá, sin haber ingresado como médico, el parentesco se escribe a mano (la API responde con error).`}
+      >
+        <div style={{ maxWidth: 640 }}>
+          <SeccionFamiliares valor={familiares} onChange={setFamiliares} />
+        </div>
+        <p className="tarjeta__subtitulo">Valor: {familiares.length ? familiares.map((f) => `${f.parentesco}: ${f.nombre}`).join(' · ') : 'ninguno'}</p>
       </Seccion>
     </div>
   )
