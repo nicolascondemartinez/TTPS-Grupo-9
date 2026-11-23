@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Navigate, useLocation, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import Boton from '../../components/Boton.jsx'
 import Campo from '../../components/Campo.jsx'
 import IngresoLayout from '../../layout/IngresoLayout.jsx'
@@ -20,6 +20,7 @@ export default function Ingreso() {
   const navigate = useNavigate()
   const { state } = useLocation()
   const desde = state?.desde
+  const registrado = state?.registrado
   const [correo, setCorreo] = useState('')
   const [contrasena, setContrasena] = useState('')
   const [errores, setErrores] = useState([])
@@ -57,6 +58,11 @@ export default function Ingreso() {
       <div className="ingreso__encabezado">
         <h2 className="ingreso__form-titulo">Ingresar</h2>
         <p className="ingreso__form-bajada">Si es tu primer ingreso, vas a tener que cambiar la contraseña.</p>
+        {registrado && (
+          <p role="status" className="acceso__ok">
+            Cuenta creada. Ingresá con tu correo y contraseña: desde este navegador te vamos a pedir un código que llega por mail.
+          </p>
+        )}
       </div>
       <form className="ingreso__form" onSubmit={enviar} noValidate>
         <Campo
@@ -74,6 +80,7 @@ export default function Ingreso() {
       </form>
       {/* TODO: flujo de recuperación de contraseña (todavía no está en los escenarios) */}
       <button type="button" className="enlace ingreso__olvido">¿Olvidaste tu contraseña?</button>
+      <Link to="/registro" className="enlace">¿No tenés cuenta? Registrate</Link>
     </IngresoLayout>
   )
 }

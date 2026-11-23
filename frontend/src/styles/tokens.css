@@ -164,3 +164,73 @@ h1, h2, h3 {
 .chip-error::before    { background: #be123c; }
 .chip-listo    { background: #6d28d9; color: #fff; }
 .chip-listo::before    { background: #fff; }
+
+.acceso__ok {
+  margin: 0;
+  color: var(--violeta-600);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+/* Registro: paso 1 (elegir rol) y lista de especialidades elegidas */
+.registro__roles {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+.registro__rol {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.875rem 1rem;
+  text-align: left;
+  font-family: var(--font-texto);
+  font-size: 1rem;
+  color: var(--tinta);
+  background: var(--blanco);
+  border: 1px solid var(--borde-campo);
+  border-radius: var(--radio-campo);
+  cursor: pointer;
+}
+.registro__rol strong {
+  font-family: var(--font-titulo);
+  font-weight: 600;
+}
+.registro__rol span {
+  color: var(--texto-suave);
+  font-size: 0.875rem;
+}
+.registro__rol:hover {
+  border-color: var(--violeta-600);
+  box-shadow: var(--sombra-foco);
+}
+.registro__rol:focus-visible {
+  outline: 3px solid var(--violeta-400);
+  outline-offset: 2px;
+}
+.registro__elegidas {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.registro__elegidas li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.25rem 0.5rem 0.25rem 0.75rem;
+  background: var(--niebla);
+  border: 1px solid var(--linea);
+  border-radius: var(--radio-campo);
+  font-size: 0.9rem;
+}
+/* El botón "Quitar" más chico que el estándar (46 px) para que la lista quede compacta */
+.registro__elegidas .btn {
+  height: 36px;
+  padding: 0 12px;
+  font-size: 14px;
+}

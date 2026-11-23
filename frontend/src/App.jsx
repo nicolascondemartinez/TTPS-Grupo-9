@@ -9,6 +9,7 @@ import Patologias from './pages/gerente/Patologias.jsx'
 import AltaPaciente from './pages/medico/AltaPaciente.jsx'
 import PacientesMedico from './pages/medico/Pacientes.jsx'
 import Ingreso from './pages/acceso/Ingreso.jsx'
+import Registro from './pages/acceso/Registro.jsx'
 import Presupuestos from './pages/administrativo/Presupuestos.jsx'
 import Turno from './pages/paciente/Turno.jsx'
 import PresupuestoPago from './pages/paciente/PresupuestoPago.jsx'
@@ -34,6 +35,7 @@ export default function App() {
     <Routes>
       <Route path="/design" element={<Design />} />
       <Route path="/ingreso" element={<Ingreso />} />
+      <Route path="/registro" element={<Registro />} />
       <Route path="/acceso/verificar" element={<VerificarCodigo />} />
       <Route path="/acceso/cambiar-contrasena" element={<CambioContrasena />} />
 
