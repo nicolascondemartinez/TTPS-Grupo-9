@@ -42,3 +42,10 @@ def turno_view(turno, centro, estudio) -> dict:
         "inasistencias": estudio.inasistencias,
         "inasistencias_maximas": MAXIMO_INASISTENCIAS,
     }
+
+def inasistencias_procesadas_view(resumen: dict) -> dict:
+    return {
+        "fecha_corte": resumen["fecha_corte"],
+        "procesados": resumen["procesados"],
+        "pagos_perdidos": resumen["pagos_perdidos"],
+    }

@@ -14,12 +14,14 @@ from sqlalchemy.orm import Session
 
 from src.core.common.errors import ApiError
 from src.core.common.validation import validar_uuid
-from src.core.enums import EstadoEstudio, EstadoTurno
+from src.core.enums import EstadoEstudio, EstadoTurno, TipoAviso
 from src.core.estudios.service import cambiar_estado_estudio
 from src.core.models import CentroExtraccion, Estudio, Provincia, Turno, Usuario, Paciente
 from src.core.pagos.service import obtener_estudio
 from src.core.turnos.calendario import ZONA_ARGENTINA, es_franja_valida, feriados_entre, franjas_del_dia
 from src.core.turnos.documentos import DatosTurno, generar_consentimiento, generar_orden
+from src.core.avisos import service as avisos_service
+from src.core.avisos.mail_service import MailSender
 
 DIAS_DE_VENTANA = 30  # hasta cuántos días para adelante se pueden sacar turnos
 MAXIMO_INASISTENCIAS = 5  # a la quinta inasistencia se pierde el pago (etapa 6)
@@ -199,3 +201,82 @@ def registrar_extraccion( session: Session, turno_id: str, administrativo: Usuar
     cambiar_estado_estudio(session, estudio, EstadoEstudio.listo_para_retirar, administrativo.id)
     session.commit()
     return turno, session.get(CentroExtraccion, turno.centro_id), estudio
+
+    # --- CRON: procesamiento automático de inasistencias ---
+def procesar_inasistencias(session: Session, fecha_corte: date | None = None, mail: MailSender | None = None) -> dict:
+    """Marca como ausentes los turnos reservados anteriores a las 00:00 (hora AR) de `fecha_corte`.
+    -en las inasistencias 1..4: el estudio vuelve a `pagado` y se avisa al paciente.
+    -en las inasistencia 5: el estudio vuelve a `creado`, se reinicia el contador y se notifica pérdida del pago.
+    """
+    fecha_corte = fecha_corte or _hoy(datetime.now(timezone.utc))
+    limite = datetime.combine(fecha_corte, datetime.min.time(), tzinfo=ZONA_ARGENTINA)
+
+    turnos_vencidos = list(
+        session.scalars(
+            select(Turno)
+            .where(
+                Turno.estado == EstadoTurno.reservado,
+                Turno.fecha_hora < limite,
+            )
+            .order_by(Turno.fecha_hora.asc())
+        )
+    )
+
+    procesados = 0
+    pagos_perdidos = 0
+
+    for turno in turnos_vencidos:
+        estudio = session.scalars(
+            select(Estudio).where(Estudio.id == turno.estudio_id).with_for_update()
+        ).first()
+        if estudio is None or estudio.estado != EstadoEstudio.turno_sacado:
+            continue
+
+        turno.estado = EstadoTurno.ausente
+        usuario_paciente = session.get(Usuario, estudio.paciente_id)
+        nuevas_inasistencias = estudio.inasistencias + 1
+
+        if nuevas_inasistencias >= MAXIMO_INASISTENCIAS:
+            estudio.inasistencias = 0
+            cambiar_estado_estudio(session, estudio, EstadoEstudio.creado, usuario_id=None)
+            pagos_perdidos += 1
+            if usuario_paciente is not None:
+                avisos_service.notificar(
+                    session,
+                    usuario_paciente,
+                    TipoAviso.pago_perdido,
+                    "Perdiste el pago por alcanzar 5 inasistencias",
+                    (
+                        "Registraste tu quinta inasistencia a un turno de extracción. "
+                        "El estudio volvió a estado Creado y vas a tener que volver a abonarlo para sacar un nuevo turno."
+                    ),
+                    estudio_id=estudio.id,
+                    turno_id=turno.id,
+                    mail=mail,
+                )
+        else:
+            estudio.inasistencias = nuevas_inasistencias
+            cambiar_estado_estudio(session, estudio, EstadoEstudio.pagado, usuario_id=None)
+            if usuario_paciente is not None:
+                avisos_service.notificar(
+                    session,
+                    usuario_paciente,
+                    TipoAviso.puede_sacar_turno,
+                    "Inasistencia registrada — podés sacar un nuevo turno",
+                    (
+                        f"No se registró tu asistencia al turno de extracción "
+                        f"(acumulás {nuevas_inasistencias} de {MAXIMO_INASISTENCIAS} inasistencias permitidas). "
+                        "Ya podés reservar un nuevo turno desde la plataforma."
+                    ),
+                    estudio_id=estudio.id,
+                    turno_id=turno.id,
+                    mail=mail,
+                )
+        procesados += 1
+
+    session.commit()
+    return {
+        "fecha_corte": fecha_corte.isoformat(),
+        "procesados": procesados,
+        "pagos_perdidos": pagos_perdidos,
+    }
