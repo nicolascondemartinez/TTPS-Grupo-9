@@ -66,7 +66,7 @@ def app(database_url):
     app.register_blueprint(_ruta_de_prueba, url_prefix="/api")
     engine = create_engine(database_url)
     with engine.begin() as conexion:
-        conexion.execute(text("TRUNCATE usuario, permiso, especialidad RESTART IDENTITY CASCADE"))
+        conexion.execute(text("TRUNCATE usuario, permiso, especialidad, provincia RESTART IDENTITY CASCADE"))
     with Session(engine) as session:
         cargar_permisos(session)
     engine.dispose()

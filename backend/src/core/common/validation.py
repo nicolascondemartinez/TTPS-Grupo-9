@@ -110,6 +110,19 @@ def _texto_obligatorio(datos: dict, campo: str, maximo: int, problemas: list) ->
     return valor
 
 
+def _validar_contacto(datos: dict, problemas: list) -> tuple[str | None, str | None, str | None, str | None]:
+    """Nombre, apellido, teléfono y correo: los datos que piden el registro y el alta de transportista."""
+    nombre = _texto_obligatorio(datos, "nombre", 100, problemas)
+    apellido = _texto_obligatorio(datos, "apellido", 100, problemas)
+    telefono = _texto_obligatorio(datos, "telefono", 30, problemas)
+    if telefono is not None and not _TELEFONO_RE.match(telefono):
+        problemas.append({"campo": "telefono", "problema": "no tiene un formato de teléfono válido"})
+    correo = _texto_obligatorio(datos, "correo", 254, problemas)
+    if correo is not None and not _EMAIL_RE.match(correo):
+        problemas.append({"campo": "correo", "problema": "no tiene un formato de correo válido"})
+    return nombre, apellido, telefono, correo
+
+
 def _validar_especialidades(valor, problemas: list) -> tuple[uuid.UUID, ...]:
     if not isinstance(valor, list) or not valor:
         problemas.append({"campo": "especialidades", "problema": "debe incluir al menos una"})
@@ -135,14 +148,7 @@ def validar_registro(datos) -> DatosRegistro:
     datos = _cuerpo(datos)
     problemas: list[dict] = []
 
-    nombre = _texto_obligatorio(datos, "nombre", 100, problemas)
-    apellido = _texto_obligatorio(datos, "apellido", 100, problemas)
-    telefono = _texto_obligatorio(datos, "telefono", 30, problemas)
-    if telefono is not None and not _TELEFONO_RE.match(telefono):
-        problemas.append({"campo": "telefono", "problema": "no tiene un formato de teléfono válido"})
-    correo = _texto_obligatorio(datos, "correo", 254, problemas)
-    if correo is not None and not _EMAIL_RE.match(correo):
-        problemas.append({"campo": "correo", "problema": "no tiene un formato de correo válido"})
+    nombre, apellido, telefono, correo = _validar_contacto(datos, problemas)
 
     contrasena = datos.get("contrasena")
     if not isinstance(contrasena, str) or contrasena == "":
@@ -166,6 +172,34 @@ def validar_registro(datos) -> DatosRegistro:
     if problemas:
         raise validation_error(problemas)
     return DatosRegistro(nombre, apellido, telefono, correo.lower(), contrasena, rol, matricula, especialidad_ids)
+
+
+@dataclass(frozen=True)
+class DatosTransportista:
+    nombre: str
+    apellido: str
+    telefono: str
+    correo: str  # en minúsculas
+    provincia_id: uuid.UUID
+
+
+def validar_alta_transportista(datos) -> DatosTransportista:
+    datos = _cuerpo(datos)
+    problemas: list[dict] = []
+    nombre, apellido, telefono, correo = _validar_contacto(datos, problemas)
+
+    provincia = datos.get("provincia_id")
+    provincia_id = None
+    if not isinstance(provincia, str) or not provincia.strip():
+        problemas.append({"campo": "provincia_id", "problema": "es obligatoria"})
+    elif not validar_uuid(provincia.strip()):
+        problemas.append({"campo": "provincia_id", "problema": "no es un identificador válido"})
+    else:
+        provincia_id = uuid.UUID(provincia.strip())
+
+    if problemas:
+        raise validation_error(problemas)
+    return DatosTransportista(nombre, apellido, telefono, correo.lower(), provincia_id)
 
 
 def validar_uuid(valor: str) -> bool:
