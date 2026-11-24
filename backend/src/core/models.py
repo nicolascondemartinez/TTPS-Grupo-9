@@ -12,7 +12,7 @@ from src.core.logistica.models import (Lote, OrdenDelDia, OrdenParada,
                                      ParadaEstudio)
 from src.core.pagos.models import (Cobertura, Cupon, DocumentacionJudicial,
                                  MovimientoFinanciero, Presupuesto)
-from src.core.turnos.models import CentroExtraccion, Feriado, Turno
+from src.core.turnos.models import CentroExtraccion, ConsentimientoFirmado, Feriado, Turno
 from src.core.usuarios.models import (CodigoVerificacion, Dispositivo,
                                     Especialidad, GerenteMedico, Medico,
                                     Provincia, Transportista, Usuario,
