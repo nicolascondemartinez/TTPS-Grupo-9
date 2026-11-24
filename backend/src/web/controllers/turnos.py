@@ -7,7 +7,9 @@ from src.core.database import get_db
 from src.core.turnos import service as turnos_service
 from src.core.turnos.validation import validar_fecha_opcional, validar_reserva
 from src.web.security import require_permission
-from src.web.views.turno_view import centros_view, inasistencias_procesadas_view, turno_view, turnos_libres_view
+from src.core.turnos import consentimiento as consentimiento_service
+from src.web.views.turno_view import (centros_view, consentimiento_view, inasistencias_procesadas_view, turno_view,
+                                     turnos_libres_view)
 from src.core.avisos.mail_service import get_mail_sender
 from src.core.common.errors import ApiError
 
@@ -88,3 +90,33 @@ def procesar_inasistencias():
         mail=get_mail_sender(),
     )
     return inasistencias_procesadas_view(resumen)
+
+
+# --- Consentimiento informado firmado ---
+
+_MARGEN_MULTIPART = 64 * 1024  # encabezados del formulario, además del archivo
+
+
+@bp.get("/estudios/<estudio_id>/consentimiento")
+@require_permission("consentimiento_ver")
+def ver_consentimiento(estudio_id):
+    return consentimiento_view(consentimiento_service.ver_consentimiento(get_db(), estudio_id, g.usuario))
+
+
+@bp.post("/estudios/<estudio_id>/consentimiento")
+@require_permission("consentimiento_cargar")
+def cargar_consentimiento(estudio_id):
+    """multipart/form-data con el PDF firmado en el campo "archivo"."""
+    if (request.content_length or 0) > consentimiento_service.MAXIMO_BYTES + _MARGEN_MULTIPART:  # antes de leerlo
+        raise ApiError(413, "ARCHIVO_DEMASIADO_GRANDE", f"El archivo supera los {consentimiento_service.MAXIMO_MB} MB")
+    archivo = request.files.get("archivo")
+    contenido = archivo.read() if archivo else None
+    consentimiento = consentimiento_service.cargar_consentimiento(get_db(), estudio_id, g.usuario, contenido)
+    return consentimiento_view(consentimiento), 201
+
+
+@bp.get("/estudios/<estudio_id>/consentimiento.pdf")
+@require_permission("consentimiento_ver")
+def descargar_consentimiento(estudio_id):
+    archivo = consentimiento_service.leer_consentimiento(get_db(), estudio_id, g.usuario)
+    return _pdf(archivo.contenido, "consentimiento-firmado.pdf")

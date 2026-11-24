@@ -49,3 +49,11 @@ def inasistencias_procesadas_view(resumen: dict) -> dict:
         "procesados": resumen["procesados"],
         "pagos_perdidos": resumen["pagos_perdidos"],
     }
+
+
+def consentimiento_view(consentimiento) -> dict:
+    """Estado del consentimiento firmado del estudio (None = todavía no se cargó)."""
+    return {
+        "cargado": consentimiento is not None,
+        "subido_at": consentimiento.subido_at.isoformat() if consentimiento else None,
+    }
