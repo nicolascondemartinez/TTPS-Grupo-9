@@ -18,6 +18,7 @@ from src.core.enums import EstadoEstudio, EstadoTurno, TipoAviso
 from src.core.estudios.service import cambiar_estado_estudio
 from src.core.models import CentroExtraccion, Estudio, Provincia, Turno, Usuario, Paciente
 from src.core.pagos.service import obtener_estudio
+from src.core.turnos.consentimiento import consentimiento_de
 from src.core.turnos.calendario import ZONA_ARGENTINA, es_franja_valida, feriados_entre, franjas_del_dia
 from src.core.turnos.documentos import DatosTurno, generar_consentimiento, generar_orden
 from src.core.avisos import service as avisos_service
@@ -194,6 +195,11 @@ def registrar_extraccion( session: Session, turno_id: str, administrativo: Usuar
 
     if turno.estado != EstadoTurno.reservado:
         raise ApiError(409, "TURNO_NO_VIGENTE", "Solo se puede registrar la extracción de un turno reservado")
+    # Sin el consentimiento firmado no se puede hacer la extracción (si el paciente no lo trae, el turno
+    # termina siendo una inasistencia con procesar_inasistencias).
+    if consentimiento_de(session, estudio.id) is None:
+        raise ApiError(409, "CONSENTIMIENTO_FALTANTE",
+                       "Falta el consentimiento informado firmado: el paciente lo tiene que cargar antes de la extracción")
     if estudio.estado != EstadoEstudio.turno_sacado:
         raise ApiError(409, "ESTADO_INVALIDO", "El estudio no se encuentra en estado Turno sacado")
 
