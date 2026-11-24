@@ -7,6 +7,7 @@ import ModalConfirmacion from '../../components/ModalConfirmacion.jsx'
 import { useNotificar } from '../../components/Notificaciones.jsx'
 import Tarjeta from '../../components/Tarjeta.jsx'
 import { mensajeDeError } from '../acceso/errores.js'
+import ConsentimientoFirmado from './ConsentimientoFirmado.jsx'
 import { conMayuscula, diaDeHorario, hora } from './fechas.js'
 
 // El turno reservado: centro, día y hora, inasistencias acumuladas y la opción de cancelar.
@@ -67,7 +68,9 @@ export default function MiTurno({ estudioId, alCancelar }) {
         </p>
         <p className="turnos__texto">No necesitás ninguna preparación especial (no hace falta ayuno).</p>
         <div className="turnos__documentos">
-          <p className="turnos__texto">Llevá la orden de extracción y el consentimiento informado impreso y firmado.</p>
+          <p className="turnos__texto">
+            Descargá el consentimiento, firmalo y subilo acá abajo. El día del turno llevá la orden de extracción.
+          </p>
           <div className="turnos__acciones">
             <Boton
               variante="secundario"
@@ -85,6 +88,7 @@ export default function MiTurno({ estudioId, alCancelar }) {
             </Boton>
           </div>
         </div>
+        <ConsentimientoFirmado estudioId={estudioId} />
         <div className="turnos__inasistencias">
           <Chip tipo={turno.inasistencias > 0 ? 'atencion' : 'neutro'}>
             Inasistencias: {turno.inasistencias} de {turno.inasistencias_maximas}
