@@ -2,11 +2,12 @@
 from datetime import date, datetime, timedelta
 
 import pytest
-from sqlalchemy import select, text
+from sqlalchemy import func, select, text
+from io import BytesIO
 
 from src.core.enums import EstadoEstudio, EstadoTurno, RolUsuario, TipoSospecha
-from src.core.models import (CentroExtraccion, Estudio, EstudioHistorialEstado, Feriado, Medico, Paciente, Patologia,
-                             Provincia, Turno)
+from src.core.models import (Archivo, CentroExtraccion, ConsentimientoFirmado, Estudio, EstudioHistorialEstado, Feriado,
+                             Medico, Paciente, Patologia, Provincia, Turno)
 from src.core.turnos.calendario import ZONA_ARGENTINA, proximo_dia_habil
 
 PACIENTE = "paciente@exoma.test"
@@ -20,7 +21,7 @@ def a_las(dia: date, h: int, m: int = 0) -> str:
 
 @pytest.fixture(autouse=True)
 def tablas_vacias(app, db):
-    db.execute(text("TRUNCATE turno, estudio, patologia, centro_extraccion, provincia, feriado CASCADE"))
+    db.execute(text("TRUNCATE turno, estudio, patologia, centro_extraccion, provincia, feriado, archivo CASCADE"))
     db.commit()
 
 
@@ -270,3 +271,98 @@ def test_un_turno_cancelado_no_tiene_documentos(api, centro, crear_estudio):
     assert r.status_code == 409
     assert codigo_error(r) == "TURNO_NO_VIGENTE"
 
+
+# ---------- Consentimiento informado firmado ----------
+
+PDF_FIRMADO = b"%PDF-1.4\n% consentimiento firmado de prueba\n%%EOF"
+ADMINISTRATIVO = "admin@exoma.test"
+
+
+def subir_consentimiento(api, token, estudio, contenido=PDF_FIRMADO, nombre="firmado.pdf"):
+    return api.client.post(
+        f"/api/estudios/{estudio.id}/consentimiento",
+        data={"archivo": (BytesIO(contenido), nombre)},
+        content_type="multipart/form-data",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+
+@pytest.fixture
+def admin(api, crear_usuario):
+    crear_usuario(rol=RolUsuario.administrativo, correo=ADMINISTRATIVO)
+    return api.token(correo=ADMINISTRATIVO)
+
+
+def test_el_paciente_sube_el_consentimiento_firmado(api, centro, crear_estudio):
+    estudio = crear_estudio()
+    token = api.token(correo=PACIENTE)
+    reservar(api, token, estudio, centro, a_las(DIA, 10))
+    assert api.get(f"/api/estudios/{estudio.id}/consentimiento", token).get_json()["cargado"] is False
+
+    r = subir_consentimiento(api, token, estudio)
+    assert r.status_code == 201, r.get_json()
+    assert r.get_json()["cargado"] is True
+    assert r.get_json()["subido_at"] is not None
+
+    pdf = api.get(f"/api/estudios/{estudio.id}/consentimiento.pdf", token)
+    assert pdf.status_code == 200
+    assert pdf.data == PDF_FIRMADO
+
+
+def test_subir_otro_reemplaza_al_anterior(api, db, crear_estudio):
+    estudio = crear_estudio()  # pagado: lo puede subir aunque todavía no haya sacado turno
+    token = api.token(correo=PACIENTE)
+    subir_consentimiento(api, token, estudio)
+    otro = b"%PDF-1.4\n% segunda version\n%%EOF"
+    assert subir_consentimiento(api, token, estudio, otro).status_code == 201
+
+    assert db.scalar(select(func.count()).select_from(ConsentimientoFirmado)) == 1
+    assert db.scalar(select(func.count()).select_from(Archivo)) == 1  # el archivo viejo se borró
+    assert api.get(f"/api/estudios/{estudio.id}/consentimiento.pdf", token).data == otro
+
+
+def test_el_consentimiento_tiene_que_ser_un_pdf(api, crear_estudio):
+    estudio = crear_estudio()
+    r = subir_consentimiento(api, api.token(correo=PACIENTE), estudio, b"no soy un pdf", "foto.pdf")
+    assert r.status_code == 400
+
+
+def test_sin_archivo_da_400(api, crear_estudio):
+    estudio = crear_estudio()
+    r = api.client.post(f"/api/estudios/{estudio.id}/consentimiento", data={},
+                        content_type="multipart/form-data",
+                        headers={"Authorization": f"Bearer {api.token(correo=PACIENTE)}"})
+    assert r.status_code == 400
+
+
+def test_no_se_sube_sin_haber_pagado(api, crear_estudio):
+    estudio = crear_estudio(estado=EstadoEstudio.creado)
+    r = subir_consentimiento(api, api.token(correo=PACIENTE), estudio)
+    assert r.status_code == 409
+    assert codigo_error(r) == "ESTADO_INVALIDO"
+
+
+def test_otro_paciente_no_sube_ni_ve_el_consentimiento(api, crear_estudio):
+    estudio = crear_estudio()
+    crear_estudio(correo=OTRO_PACIENTE, dni="30999888")
+    subir_consentimiento(api, api.token(correo=PACIENTE), estudio)
+    otro = api.token(correo=OTRO_PACIENTE)
+    assert subir_consentimiento(api, otro, estudio).status_code == 404
+    assert api.get(f"/api/estudios/{estudio.id}/consentimiento.pdf", otro).status_code == 404
+
+
+def test_sin_consentimiento_no_se_registra_la_extraccion(api, admin, centro, crear_estudio):
+    estudio = crear_estudio()
+    token = api.token(correo=PACIENTE)
+    turno_id = reservar(api, token, estudio, centro, a_las(DIA, 10)).get_json()["id"]
+
+    r = post(api, f"/api/turnos/{turno_id}/extraccion", admin)
+    assert r.status_code == 409
+    assert codigo_error(r) == "CONSENTIMIENTO_FALTANTE"
+
+    subir_consentimiento(api, token, estudio)
+    # el administrativo puede verlo antes de registrar la extracción
+    assert api.get(f"/api/estudios/{estudio.id}/consentimiento.pdf", admin).status_code == 200
+    r = post(api, f"/api/turnos/{turno_id}/extraccion", admin)
+    assert r.status_code == 200, r.get_json()
+    assert r.get_json()["estado_estudio"] == "listo_para_retirar"
