@@ -18,6 +18,8 @@ import RutaProtegida from './sesion/RutaProtegida.jsx'
 import { useSesion } from './sesion/SesionContext.jsx'
 import { AvisosProvider } from './avisos/AvisosContext.jsx'
 import Avisos from './pages/avisos/Avisos.jsx'
+import Transportistas from './pages/administrativo/Transportistas.jsx'
+import FormularioTransportista from './pages/administrativo/FormularioTransportista.jsx'
 
 // Lleva a cada usuario a la primera pantalla de su rol (solo se renderiza con sesión: lo garantiza RutaProtegida).
 function Inicio() {
@@ -48,6 +50,8 @@ export default function App() {
           <Route path="/paciente/pagos" element={<PresupuestoPago />} />
           <Route path="/paciente/turno" element={<Turno />} />
           <Route path="/administrativo/presupuestos" element={<Presupuestos />} />
+          <Route path="/administrativo/transportistas" element={<Transportistas />} />
+          <Route path="/administrativo/transportistas/nuevo" element={<FormularioTransportista />} />
           <Route path="/gerente/patologias/nueva" element={<FormularioPatologia />} />
           <Route path="/gerente/patologias/:id" element={<FormularioPatologia />} />
           <Route path="/medico/pacientes" element={<PacientesMedico />} />
