@@ -1,0 +1,32 @@
+.transportistas__error {
+  margin: 0;
+  color: #9f1239; /* el mismo rojo que .chip-error: tokens.css no define un color de error */
+  font-size: 0.875rem;
+}
+.transportistas__ayuda {
+  margin: 0;
+  color: var(--texto-suave);
+  font-size: 0.875rem;
+}
+.transportista-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 640px;
+}
+.transportista-form__campos {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.5rem;
+}
+.transportista-form__acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+.transportista-form__aviso {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
