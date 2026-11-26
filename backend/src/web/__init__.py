@@ -30,4 +30,17 @@ def create_app(config_name: str | None = None):
         from src.core.database import seed_db
         seed_db()
 
+    @app.cli.command("procesar-inasistencias")
+    def _procesar_inasistencias():
+        from src.core.avisos.mail_service import get_mail_sender
+        from src.core.database import nueva_sesion
+        from src.core.turnos.service import procesar_inasistencias
+
+        with nueva_sesion() as session:
+            resumen = procesar_inasistencias(session, mail=get_mail_sender())
+            print(
+                f"Inasistencias procesadas del dia {resumen['fecha_corte']}: "
+                f"{resumen['procesados']} turnos y {resumen['pagos_perdidos']} pagos perdidos"
+            )
+    
     return app

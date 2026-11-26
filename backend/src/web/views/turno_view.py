@@ -42,3 +42,18 @@ def turno_view(turno, centro, estudio) -> dict:
         "inasistencias": estudio.inasistencias,
         "inasistencias_maximas": MAXIMO_INASISTENCIAS,
     }
+
+def inasistencias_procesadas_view(resumen: dict) -> dict:
+    return {
+        "fecha_corte": resumen["fecha_corte"],
+        "procesados": resumen["procesados"],
+        "pagos_perdidos": resumen["pagos_perdidos"],
+    }
+
+
+def consentimiento_view(consentimiento) -> dict:
+    """Estado del consentimiento firmado del estudio (None = todavía no se cargó)."""
+    return {
+        "cargado": consentimiento is not None,
+        "subido_at": consentimiento.subido_at.isoformat() if consentimiento else None,
+    }

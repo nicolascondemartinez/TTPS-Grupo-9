@@ -1,0 +1,40 @@
+/* Vista móvil del transportista (390px de referencia) */
+.orden-movil {
+  max-width: 440px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.orden-movil__parada-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.orden-movil__posicion {
+  font-family: var(--font-titulo);
+  font-weight: 600;
+  color: var(--violeta-600);
+}
+
+.orden-movil__direccion {
+  color: var(--texto-suave);
+  font-size: 14px;
+}
+
+.orden-movil__muestras {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.orden-movil .btn {
+  min-height: 46px;
+}
+
+.orden-movil__error {
+  color: #be123c;
+  font-weight: 500;
+}

@@ -1,11 +1,17 @@
 """Centros de extracción y turnos: el paciente ve los centros, elige un horario libre, reserva y cancela."""
 from flask import Blueprint, Response, g, request
+import hmac
+import os
 
 from src.core.database import get_db
 from src.core.turnos import service as turnos_service
 from src.core.turnos.validation import validar_fecha_opcional, validar_reserva
 from src.web.security import require_permission
-from src.web.views.turno_view import centros_view, turno_view, turnos_libres_view
+from src.core.turnos import consentimiento as consentimiento_service
+from src.web.views.turno_view import (centros_view, consentimiento_view, inasistencias_procesadas_view, turno_view,
+                                     turnos_libres_view)
+from src.core.avisos.mail_service import get_mail_sender
+from src.core.common.errors import ApiError
 
 bp = Blueprint("turnos", __name__)
 
@@ -59,3 +65,58 @@ def _pdf(contenido: bytes, nombre: str) -> Response:
     """Respuesta con el PDF para descargar."""
     return Response(contenido, mimetype="application/pdf",
                     headers={"Content-Disposition": f'attachment; filename="{nombre}"'})
+
+@bp.post("/turnos/<turno_id>/extraccion")
+@require_permission("extraccion_registrar")
+def registrar_extraccion(turno_id):
+    return turno_view(*turnos_service.registrar_extraccion(get_db(), turno_id, g.usuario))
+
+def _autorizar_job_interno() -> None:
+    """Exige cabecera X-Internal-Token igual a INTERNAL_JOBS_TOKEN."""
+    token_esperado = os.environ.get("INTERNAL_JOBS_TOKEN", "").strip()
+    token_recibido = request.headers.get("X-Internal-Token", "").strip()
+    if not token_esperado or not token_recibido or not hmac.compare_digest(token_esperado, token_recibido):
+        raise ApiError(401, "TOKEN_INTERNO_INVALIDO", "Token interno inválido o faltante")
+    
+@bp.post("/turnos/procesar-inasistencias")
+def procesar_inasistencias():
+    """Job automático (CRON) que registra las inasistencias de turnos reservados vencidos"""
+    _autorizar_job_interno()
+    datos = request.get_json(silent=True) or {}
+    fecha_corte = validar_fecha_opcional(datos.get("fecha_corte"), "fecha_corte")
+    resumen = turnos_service.procesar_inasistencias(
+        get_db(),
+        fecha_corte=fecha_corte,
+        mail=get_mail_sender(),
+    )
+    return inasistencias_procesadas_view(resumen)
+
+
+# --- Consentimiento informado firmado ---
+
+_MARGEN_MULTIPART = 64 * 1024  # encabezados del formulario, además del archivo
+
+
+@bp.get("/estudios/<estudio_id>/consentimiento")
+@require_permission("consentimiento_ver")
+def ver_consentimiento(estudio_id):
+    return consentimiento_view(consentimiento_service.ver_consentimiento(get_db(), estudio_id, g.usuario))
+
+
+@bp.post("/estudios/<estudio_id>/consentimiento")
+@require_permission("consentimiento_cargar")
+def cargar_consentimiento(estudio_id):
+    """multipart/form-data con el PDF firmado en el campo "archivo"."""
+    if (request.content_length or 0) > consentimiento_service.MAXIMO_BYTES + _MARGEN_MULTIPART:  # antes de leerlo
+        raise ApiError(413, "ARCHIVO_DEMASIADO_GRANDE", f"El archivo supera los {consentimiento_service.MAXIMO_MB} MB")
+    archivo = request.files.get("archivo")
+    contenido = archivo.read() if archivo else None
+    consentimiento = consentimiento_service.cargar_consentimiento(get_db(), estudio_id, g.usuario, contenido)
+    return consentimiento_view(consentimiento), 201
+
+
+@bp.get("/estudios/<estudio_id>/consentimiento.pdf")
+@require_permission("consentimiento_ver")
+def descargar_consentimiento(estudio_id):
+    archivo = consentimiento_service.leer_consentimiento(get_db(), estudio_id, g.usuario)
+    return _pdf(archivo.contenido, "consentimiento-firmado.pdf")

@@ -4,7 +4,7 @@ from datetime import date, datetime
 from decimal import Decimal
 
 from sqlalchemy import (Boolean, Date, DateTime, ForeignKey, Index, Numeric,
-                        String, text)
+                        String, Text, func, text)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.core.database import Base, Timestamps, UuidPk, pg_enum
@@ -53,3 +53,15 @@ class Turno(Base, UuidPk, Timestamps):
         Index("uq_turno_estudio_reservado", "estudio_id", unique=True, postgresql_where=text("estado = 'reservado'")),
         Index("ix_turno_estudio_id", "estudio_id"),
     )
+
+
+
+class ConsentimientoFirmado(Base, UuidPk):
+    """Consentimiento informado firmado que sube el paciente (uno por estudio; si sube otro, se reemplaza).
+    El archivo se guarda con el servicio de almacenamiento: acá queda solo su ruta."""
+
+    __tablename__ = "consentimiento_firmado"
+    estudio_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("estudio.id", ondelete="CASCADE"), unique=True)
+    archivo_url: Mapped[str] = mapped_column(Text)
+    subido_por_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("usuario.id", ondelete="SET NULL"))
+    subido_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

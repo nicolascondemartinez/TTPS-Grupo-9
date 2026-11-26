@@ -18,6 +18,7 @@ import RutaProtegida from './sesion/RutaProtegida.jsx'
 import { useSesion } from './sesion/SesionContext.jsx'
 import { AvisosProvider } from './avisos/AvisosContext.jsx'
 import Avisos from './pages/avisos/Avisos.jsx'
+import OrdenDelDia from './pages/transportista/OrdenDelDia.jsx'
 import Transportistas from './pages/administrativo/Transportistas.jsx'
 import FormularioTransportista from './pages/administrativo/FormularioTransportista.jsx'
 
@@ -44,6 +45,7 @@ export default function App() {
       <Route element={<RutaProtegida />}>
         <Route element={<AvisosProvider><AppLayout /></AvisosProvider>}>
           <Route index element={<Inicio />} />
+          <Route path="/transportista/orden-del-dia" element={<OrdenDelDia />} />
           {/* Pantallas reales: van acá, antes de las rutas provisorias */}
           <Route path="/avisos" element={<Avisos />} />
           <Route path="/gerente/patologias" element={<Patologias />} />
